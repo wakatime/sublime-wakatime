@@ -1,4 +1,4 @@
-sublime-wakatime
+sublime-wakatime 0.1.0
 ================
 
 automatic time tracking for Sublime Text 2
