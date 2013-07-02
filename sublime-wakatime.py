@@ -30,7 +30,7 @@ def get_api_key():
         for line in cf:
             line = line.split('=', 1)
             if line[0] == 'api_key':
-                api_key = line[1]
+                api_key = line[1].strip()
         cf.close()
     except IOError:
         pass
