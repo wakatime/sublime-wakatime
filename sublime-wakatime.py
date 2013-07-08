@@ -76,17 +76,19 @@ class WakatimeListener(sublime_plugin.EventListener):
 
     def on_activated(self, view):
         now = time.time()
-        if enough_time_passed(now):
+        targetFile = view.file_name()
+        if enough_time_passed(now) or targetFile != LAST_FILE:
             if away(now):
-                api(view.file_name(), LAST_ACTION, endtime=now)
+                api(targetFile, LAST_ACTION, endtime=now)
             else:
-                api(view.file_name(), now)
+                api(targetFile, now)
 
     def on_selection_modified(self, view):
         now = time.time()
-        if enough_time_passed(now):
+        targetFile = view.file_name()
+        if enough_time_passed(now) or targetFile != LAST_FILE:
             if away(now):
-                api(view.file_name(), LAST_ACTION, endtime=now)
+                api(targetFile, LAST_ACTION, endtime=now)
             else:
-                api(view.file_name(), now)
+                api(targetFile, now)
 
