@@ -9,7 +9,7 @@ __version__ = '0.2.1'
 
 import time
 import uuid
-from os.path import expanduser, dirname, realpath
+from os.path import expanduser, dirname, realpath, isfile
 from subprocess import call, Popen
 
 import sublime
@@ -24,6 +24,14 @@ PLUGIN_DIR = dirname(realpath(__file__))
 API_CLIENT = '%s/packages/wakatime/wakatime.py' % PLUGIN_DIR
 LAST_ACTION = 0
 LAST_FILE = None
+
+# To be backwards compatible, rename config file
+if isfile(expanduser('~/.wakatime')):
+    call([
+        'mv',
+        expanduser('~/.wakatime'),
+        expanduser('~/.wakatime.conf')
+    ])
 
 
 def api(targetFile, timestamp, isWrite=False, endtime=None):
@@ -54,19 +62,22 @@ def away(now):
     if duration > AWAY_MINUTES * 60:
         duration = int(duration)
         units = 'seconds'
-        if duration > 60:
+        if duration > 59:
             duration = int(duration / 60.0)
             units = 'minutes'
-        if duration > 60:
+        if duration > 59:
             duration = int(duration / 60.0)
             units = 'hours'
+        if duration > 24:
+            duration = int(duration / 24.0)
+            units = 'days'
         return sublime\
             .ok_cancel_dialog("You were away %d %s. Add time to current file?"\
             % (duration, units), 'Yes, log this time')
 
 
 def enough_time_passed(now):
-    return (now - LAST_ACTION >= 5 * 60)
+    return (now - LAST_ACTION >= 299)
 
 
 class WakatimeListener(sublime_plugin.EventListener):
