@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-""" wakatime
+"""
+    wakatime
     ~~~~~~~~
 
     Action event appender for Wakati.Me, a time tracking api for text editors.
