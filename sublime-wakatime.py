@@ -17,7 +17,7 @@ import sublime_plugin
 
 
 # Prompt user if no activity for this many minutes
-AWAY_MINUTES = 10
+AWAY_MINUTES = 5
 
 # globals
 PLUGIN_DIR = dirname(realpath(__file__))
