@@ -12,7 +12,7 @@
 from __future__ import print_function
 
 __title__ = 'wakatime'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __author__ = 'Alan Hamlett'
 __license__ = 'BSD'
 __copyright__ = 'Copyright 2013 Alan Hamlett'
@@ -97,10 +97,6 @@ def parseArguments():
             args.key = default_key
         else:
             parser.error('Missing api key')
-    if args.endtime and args.endtime < args.timestamp:
-        tmp = args.timestamp
-        args.timestamp = args.endtime
-        args.endtime = tmp
     return args
 
 
