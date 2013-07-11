@@ -6,25 +6,21 @@ automatic time tracking for Sublime Text 2 & 3
 Installation
 ------------
 
-1) Get an api key from:
+1. Get an api key from: https://wakati.me
 
-https://wakati.me
+2. Using [Sublime Package Control](http://wbond.net/sublime_packages/package_control):
 
-2) Install the sublime-wakatime plugin using [Sublime Package Control](http://wbond.net/sublime_packages/package_control):
+  a) Press `ctrl+shift+p`(Windows, Linux) or `cmd+shift+p`(OS X).
 
-* Press `ctrl+shift+p` or `cmd+shift+p`.
-* Type `Install` then press `enter` on `Package Control: Install Package`.
-* Type `wakatime` and press `enter` to download and install the sublime-wakatime plugin.
+  b) Type `install`, then press `enter` with `Package Control: Install Package` selected.
 
-3) Open Sublime Text.
+  c) Type `wakatime`, then press `enter` with the `WakaTime` plugin selected.
 
-You will see a prompt at the bottom asking for your [WakaTi.me](https://www.wakati.me/#apikey) api key.
+3. You will see a prompt at the bottom asking for your [api key](https://www.wakati.me/#apikey). Enter your api key, then press `enter`.
 
-Enter your api key, then press `enter`.
+4. Use Sublime and your time will automatically be tracked for you.
 
-4) Use Sublime and your time will automatically be tracked for you.
-
-5) Visit https://wakati.me see your logged time.
+5. Visit https://wakati.me see your logged time.
 
 Screen Shots
 ------------
