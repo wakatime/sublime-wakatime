@@ -20,7 +20,7 @@ Installation
 
 4. Use Sublime and your time will automatically be tracked for you.
 
-5. Visit https://wakati.me see your logged time.
+5. Visit https://wakati.me to see your logged time.
 
 Screen Shots
 ------------
