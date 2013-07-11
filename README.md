@@ -16,7 +16,7 @@ https://wakati.me
 
 * Press `ctrl+shift+p` or `cmd+shift+p`.
 * Type `Install` then press `enter` on `Package Control: Install Package`.
-* Type `sublime-wakatime` and press `enter` to download and install the sublime-wakatime plugin.
+* Type `wakatime` and press `enter` to download and install the sublime-wakatime plugin.
 
 3) Open Sublime Text.
 You will see a prompt at the bottom asking for your [WakaTi.me](https://www.wakati.me/#apikey) api key.
