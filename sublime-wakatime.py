@@ -35,6 +35,16 @@ if isfile(expanduser('~/.wakatime')):
     ])
 
 
+# Create config file if it does not already exist
+if not isfile(expanduser('~/.wakatime.conf')) or True:
+    def got_key(text):
+        if text:
+            cfg = open(expanduser('~/.wakatime.conf'), 'w')
+            cfg.write('api_key=%s' % text)
+            cfg.close()
+    sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
+
+
 def api(targetFile, timestamp, isWrite=False, endtime=None):
     global LAST_ACTION, LAST_USAGE, LAST_FILE
     if not targetFile:
