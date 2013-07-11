@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 import time
 import uuid
@@ -24,6 +24,7 @@ API_CLIENT = '%s/packages/wakatime/wakatime.py' % PLUGIN_DIR
 LAST_ACTION = 0
 LAST_USAGE = 0
 LAST_FILE = None
+BUSY = False
 
 
 # To be backwards compatible, rename config file
@@ -61,11 +62,11 @@ def api(targetFile, timestamp, isWrite=False, endtime=None):
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
         Popen(cmd)
-        LAST_ACTION = timestamp
-        if endtime and endtime > LAST_ACTION:
-            LAST_ACTION = endtime
-        LAST_FILE = targetFile
-        LAST_USAGE = LAST_ACTION
+    LAST_ACTION = timestamp
+    if endtime and endtime > LAST_ACTION:
+        LAST_ACTION = endtime
+    LAST_FILE = targetFile
+    LAST_USAGE = LAST_ACTION
 
 
 def away(now):
@@ -86,7 +87,7 @@ def away(now):
 
 
 def enough_time_passed(now):
-    if now - LAST_ACTION > ACTION_FREQUENCY * 60:
+    if now - LAST_ACTION > ACTION_FREQUENCY * 60 and not BUSY:
         return True
     return False
 
@@ -116,10 +117,11 @@ def handle_write_action(view):
 
 
 def handle_normal_action(view):
-    global LAST_USAGE
+    global LAST_USAGE, BUSY
     now = time.time()
     targetFile = view.file_name()
     if enough_time_passed(now) or targetFile != LAST_FILE:
+        BUSY = True
         if should_prompt_user(now):
             if away(now):
                 api(targetFile, now, endtime=LAST_ACTION)
@@ -127,6 +129,7 @@ def handle_normal_action(view):
                 api(targetFile, now)
         else:
             api(targetFile, now, endtime=LAST_ACTION)
+        BUSY = False
     else:
         LAST_USAGE = now
 
