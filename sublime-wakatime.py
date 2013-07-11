@@ -1,11 +1,11 @@
 """ ==========================================================
 File:        sublime-wakatime.py
 Description: Automatic time tracking for Sublime Text 2 and 3.
-Maintainer:  Wakati.Me <support@wakatime.com>
+Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 import time
 import uuid
