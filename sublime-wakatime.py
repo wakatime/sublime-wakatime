@@ -36,7 +36,7 @@ if isfile(expanduser('~/.wakatime')):
 
 
 # Create config file if it does not already exist
-if not isfile(expanduser('~/.wakatime.conf')) or True:
+if not isfile(expanduser('~/.wakatime.conf')):
     def got_key(text):
         if text:
             cfg = open(expanduser('~/.wakatime.conf'), 'w')
