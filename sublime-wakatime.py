@@ -71,19 +71,24 @@ def api(targetFile, timestamp, isWrite=False, endtime=None):
 
 def away(now):
     duration = now - LAST_USAGE
-    units = 'seconds'
-    if duration > 59:
+    minutes = ''
+    units = 'second'
+    if duration >= 60:
         duration = int(duration / 60)
-        units = 'minutes'
-    if duration > 59:
-        duration = int(duration / 60)
-        units = 'hours'
-    if duration > 24:
-        duration = int(duration / 24)
-        units = 'days'
+        units = 'minute'
+        if duration >= 60:
+            remainder = duration % 60
+            if remainder > 0:
+                minutes = ' and %d minute' % remainder
+            if remainder > 1:
+                minutes = minutes + 's'
+            duration = int(duration / 60)
+            units = 'hour'
+    if duration > 1:
+        units = units + 's'
     return sublime\
-        .ok_cancel_dialog("You were away %d %s. Add time to current file?"\
-        % (duration, units), 'Yes, log this time')
+        .ok_cancel_dialog("You were away %d %s%s. Add time to current file?"\
+        % (duration, units, minutes), 'Yes, log this time')
 
 
 def enough_time_passed(now):
