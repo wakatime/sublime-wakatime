@@ -108,36 +108,41 @@ def should_prompt_user(now):
 
 
 def handle_write_action(view):
-    now = time.time()
+    global BUSY
+    BUSY = True
     targetFile = view.file_name()
-    if enough_time_passed(now) or targetFile != LAST_FILE:
-        if should_prompt_user(now):
-            if away(now):
-                api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
+    if targetFile:
+        now = time.time()
+        if enough_time_passed(now) or targetFile != LAST_FILE:
+            if should_prompt_user(now):
+                if away(now):
+                    api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
+                else:
+                    api(targetFile, now, isWrite=True)
             else:
-                api(targetFile, now, isWrite=True)
+                api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
         else:
-            api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
-    else:
-        api(targetFile, now, isWrite=True)
+            api(targetFile, now, isWrite=True)
+    BUSY = False
 
 
 def handle_normal_action(view):
     global LAST_USAGE, BUSY
-    now = time.time()
+    BUSY = True
     targetFile = view.file_name()
-    if enough_time_passed(now) or targetFile != LAST_FILE:
-        BUSY = True
-        if should_prompt_user(now):
-            if away(now):
-                api(targetFile, now, endtime=LAST_ACTION)
+    if targetFile:
+        now = time.time()
+        if enough_time_passed(now) or targetFile != LAST_FILE:
+            if should_prompt_user(now):
+                if away(now):
+                    api(targetFile, now, endtime=LAST_ACTION)
+                else:
+                    api(targetFile, now)
             else:
-                api(targetFile, now)
+                api(targetFile, now, endtime=LAST_ACTION)
         else:
-            api(targetFile, now, endtime=LAST_ACTION)
-        BUSY = False
-    else:
-        LAST_USAGE = now
+            LAST_USAGE = now
+    BUSY = False
 
 
 class WakatimeListener(sublime_plugin.EventListener):
