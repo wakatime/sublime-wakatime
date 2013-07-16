@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 import time
 import uuid
@@ -61,6 +61,7 @@ def api(targetFile, timestamp, isWrite=False, endtime=None):
             cmd.append('--write')
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
+        #print(cmd)
         Popen(cmd)
     LAST_ACTION = timestamp
     if endtime and endtime > LAST_ACTION:
@@ -147,6 +148,6 @@ class WakatimeListener(sublime_plugin.EventListener):
     def on_activated(self, view):
         handle_normal_action(view)
 
-    def on_selection_modified(self, view):
+    def on_modified(self, view):
         handle_normal_action(view)
 
