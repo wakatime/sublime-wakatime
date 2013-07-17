@@ -46,7 +46,7 @@ if not isfile(expanduser('~/.wakatime.conf')):
     sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
 
 
-def api(targetFile, timestamp, isWrite=False, endtime=None):
+def api(targetFile, timestamp, isWrite=False, endtime=0):
     global LAST_ACTION, LAST_USAGE, LAST_FILE
     if not targetFile:
         targetFile = LAST_FILE
@@ -63,11 +63,13 @@ def api(targetFile, timestamp, isWrite=False, endtime=None):
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
         Popen(cmd)
-    LAST_ACTION = timestamp
-    if endtime and endtime > LAST_ACTION:
-        LAST_ACTION = endtime
-    LAST_FILE = targetFile
-    LAST_USAGE = LAST_ACTION
+        LAST_ACTION = timestamp
+        if endtime and endtime > LAST_ACTION:
+            LAST_ACTION = endtime
+        LAST_FILE = targetFile
+        LAST_USAGE = LAST_ACTION
+    else:
+        LAST_USAGE = timestamp
 
 
 def away(now):
@@ -93,7 +95,7 @@ def away(now):
 
 
 def enough_time_passed(now):
-    if now - LAST_ACTION > ACTION_FREQUENCY * 60 and not BUSY:
+    if now - LAST_ACTION > ACTION_FREQUENCY * 60:
         return True
     return False
 
@@ -108,21 +110,20 @@ def should_prompt_user(now):
 
 
 def handle_write_action(view):
-    global BUSY
+    global LAST_USAGE, BUSY
     BUSY = True
     targetFile = view.file_name()
-    if targetFile:
-        now = time.time()
-        if enough_time_passed(now) or targetFile != LAST_FILE:
-            if should_prompt_user(now):
-                if away(now):
-                    api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
-                else:
-                    api(targetFile, now, isWrite=True)
-            else:
+    now = time.time()
+    if enough_time_passed(now) or (LAST_FILE and targetFile != LAST_FILE):
+        if should_prompt_user(now):
+            if away(now):
                 api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
+            else:
+                api(targetFile, now, isWrite=True)
         else:
-            api(targetFile, now, isWrite=True)
+            api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
+    else:
+        api(targetFile, now, isWrite=True)
     BUSY = False
 
 
@@ -130,29 +131,34 @@ def handle_normal_action(view):
     global LAST_USAGE, BUSY
     BUSY = True
     targetFile = view.file_name()
-    if targetFile:
-        now = time.time()
-        if enough_time_passed(now) or targetFile != LAST_FILE:
-            if should_prompt_user(now):
-                if away(now):
-                    api(targetFile, now, endtime=LAST_ACTION)
-                else:
-                    api(targetFile, now)
-            else:
+    now = time.time()
+    if enough_time_passed(now) or (LAST_FILE and targetFile != LAST_FILE):
+        if should_prompt_user(now):
+            if away(now):
                 api(targetFile, now, endtime=LAST_ACTION)
+            else:
+                api(targetFile, now)
         else:
-            LAST_USAGE = now
+            api(targetFile, now, endtime=LAST_ACTION)
+    else:
+        LAST_USAGE = now
     BUSY = False
 
 
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        handle_write_action(view)
+        if view.file_name():
+            #print(['saved', view.file_name()])
+            handle_write_action(view)
 
     def on_activated(self, view):
-        handle_normal_action(view)
+        if view.file_name() and not BUSY:
+            #print(['activated', view.file_name()])
+            handle_normal_action(view)
 
     def on_modified(self, view):
-        handle_normal_action(view)
+        if view.file_name() and not BUSY:
+            #print(['modified', view.file_name()])
+            handle_normal_action(view)
 
