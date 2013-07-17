@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 import time
 import uuid
@@ -62,7 +62,8 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
-        Popen(cmd)
+        with open(expanduser('~/.wakatime.log'), 'a') as stderr:
+            Popen(cmd, stderr=stderr)
         LAST_ACTION = timestamp
         if endtime and endtime > LAST_ACTION:
             LAST_ACTION = endtime
