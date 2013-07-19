@@ -11,7 +11,7 @@ import time
 import uuid
 from os.path import expanduser, dirname, realpath, isfile
 from subprocess import call, Popen
-
+import platform
 import sublime
 import sublime_plugin
 
@@ -51,7 +51,12 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
     if not targetFile:
         targetFile = LAST_FILE
     if targetFile:
-        cmd = ['python', API_CLIENT,
+        
+        python_cmd = 'python'
+        if(platform.system() == 'Windows'):
+            python_cmd = 'pythonw'
+            
+        cmd = [python_cmd, API_CLIENT,
             '--file', targetFile,
             '--time', str('%f' % timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
