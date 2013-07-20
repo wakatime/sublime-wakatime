@@ -20,7 +20,7 @@ import sublime_plugin
 AWAY_MINUTES = 10
 ACTION_FREQUENCY = 5
 PLUGIN_DIR = dirname(realpath(__file__))
-API_CLIENT = '%s/packages/wakatime/wakatime.py' % PLUGIN_DIR
+API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
 LAST_ACTION = 0
 LAST_USAGE = 0
 LAST_FILE = None
@@ -51,11 +51,11 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
     if not targetFile:
         targetFile = LAST_FILE
     if targetFile:
-        
+
         python_cmd = 'python'
         if(platform.system() == 'Windows'):
             python_cmd = 'pythonw'
-            
+
         cmd = [python_cmd, API_CLIENT,
             '--file', targetFile,
             '--time', str('%f' % timestamp),
