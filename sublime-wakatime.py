@@ -9,7 +9,7 @@ __version__ = '0.2.7'
 
 import time
 import uuid
-from os.path import expanduser, dirname, realpath, isfile
+from os.path import expanduser, dirname, realpath, isfile, join
 from subprocess import call, Popen
 import platform
 import sublime
@@ -28,19 +28,19 @@ BUSY = False
 
 
 # To be backwards compatible, rename config file
-if isfile(expanduser('~/.wakatime')):
+if isfile(join(expanduser('~'), '.wakatime')):
     call([
         'mv',
-        expanduser('~/.wakatime'),
-        expanduser('~/.wakatime.conf')
+        join(expanduser('~'), '.wakatime'),
+        join(expanduser('~'), '.wakatime.conf')
     ])
 
 
 # Create config file if it does not already exist
-if not isfile(expanduser('~/.wakatime.conf')):
+if not isfile(join(expanduser('~'), '.wakatime.conf')):
     def got_key(text):
         if text:
-            cfg = open(expanduser('~/.wakatime.conf'), 'w')
+            cfg = open(join(expanduser('~'), '.wakatime.conf'), 'w')
             cfg.write('api_key=%s' % text)
             cfg.close()
     sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
@@ -67,7 +67,7 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
-        with open(expanduser('~/.wakatime.log'), 'a') as stderr:
+        with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
             Popen(cmd, stderr=stderr)
         LAST_ACTION = timestamp
         if endtime and endtime > LAST_ACTION:
