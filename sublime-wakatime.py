@@ -10,6 +10,7 @@ __version__ = '0.2.9'
 import sublime
 import sublime_plugin
 
+import glob
 import platform
 import time
 import uuid
