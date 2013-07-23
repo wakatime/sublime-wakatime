@@ -14,7 +14,7 @@ import platform
 import sys
 import time
 import uuid
-from os.path import expanduser, dirname, realpath, isfile, join
+from os.path import expanduser, dirname, realpath, isfile, join, exists
 from subprocess import call, Popen
 
 
@@ -55,7 +55,7 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
     if targetFile:
 
         python_binary = sys.executable
-        if platform.system() == 'Windows':
+        if platform.system() == 'Windows' and exists(python_binary+'w'):
             python_binary = python_binary + 'w'
 
         cmd = [python_binary, API_CLIENT,
