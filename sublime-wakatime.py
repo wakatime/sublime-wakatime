@@ -47,15 +47,30 @@ if not isfile(join(expanduser('~'), '.wakatime.conf')):
     sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
 
 
+def python_binary():
+    python = 'python'
+    if platform.system() == 'Windows':
+        try:
+            Popen([python, '--version'])
+        except:
+            for path in glob.iglob('/python*'):
+                if exists(realpath(join(path, 'python.exe'))):
+                    python = realpath(join(path, 'python'))
+                    break
+        try:
+            Popen([python+'w', '--version'])
+            python = python+'w'
+        except:
+            pass
+    return python
+
+
 def api(targetFile, timestamp, isWrite=False, endtime=0):
     global LAST_ACTION, LAST_USAGE, LAST_FILE
     if not targetFile:
         targetFile = LAST_FILE
     if targetFile:
-        python = 'python'
-        if platform.system() == 'Windows' and exists(python+'w'):
-            python = python+'w'
-        cmd = [python, API_CLIENT,
+        cmd = [python_binary(), API_CLIENT,
             '--file', targetFile,
             '--time', str('%f' % timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
@@ -66,8 +81,11 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
-        with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
-            Popen(cmd, stderr=stderr)
+        if platform.system() == 'Windows':
+            Popen(cmd)
+        else:
+            with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
+                Popen(cmd, stderr=stderr)
         LAST_ACTION = timestamp
         if endtime and endtime > LAST_ACTION:
             LAST_ACTION = endtime
