@@ -7,13 +7,15 @@ Website:     https://www.wakati.me/
 
 __version__ = '0.2.9'
 
+import sublime
+import sublime_plugin
+
+import platform
+import sys
 import time
 import uuid
 from os.path import expanduser, dirname, realpath, isfile, join
 from subprocess import call, Popen
-import platform
-import sublime
-import sublime_plugin
 
 
 # globals
@@ -52,11 +54,11 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
         targetFile = LAST_FILE
     if targetFile:
 
-        python_cmd = 'python'
-        if(platform.system() == 'Windows'):
-            python_cmd = 'pythonw'
+        python_binary = sys.executable
+        if platform.system() == 'Windows':
+            python_binary = python_binary + 'w'
 
-        cmd = [python_cmd, API_CLIENT,
+        cmd = [python_binary, API_CLIENT,
             '--file', targetFile,
             '--time', str('%f' % timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
