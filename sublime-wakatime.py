@@ -15,7 +15,7 @@ import platform
 import time
 import uuid
 from os.path import expanduser, dirname, realpath, isfile, join, exists
-from subprocess import call, Popen
+from subprocess import call, Popen, STARTUPINFO, STARTF_USESHOWWINDOW
 
 
 # globals
@@ -79,7 +79,9 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
         if platform.system() == 'Windows':
-            Popen(cmd)
+            startupinfo = STARTUPINFO()
+            startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+            Popen(cmd, startupinfo=startupinfo)
         else:
             with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
                 Popen(cmd, stderr=stderr)
