@@ -51,18 +51,14 @@ if not isfile(join(expanduser('~'), '.wakatime.conf')):
 def python_binary():
     python = 'python'
     if platform.system() == 'Windows':
+        python = 'pythonw'
         try:
             Popen([python, '--version'])
         except:
             for path in glob.iglob('/python*'):
-                if exists(realpath(join(path, 'python.exe'))):
-                    python = realpath(join(path, 'python'))
+                if exists(realpath(join(path, 'pythonw.exe'))):
+                    python = realpath(join(path, 'pythonw'))
                     break
-        try:
-            Popen([python+'w', '--version'])
-            python = python+'w'
-        except:
-            pass
     return python
 
 
