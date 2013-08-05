@@ -11,11 +11,12 @@ import sublime
 import sublime_plugin
 
 import glob
+import os
 import platform
 import time
 import uuid
 from os.path import expanduser, dirname, realpath, isfile, join, exists
-from subprocess import call, Popen, STARTUPINFO, STARTF_USESHOWWINDOW
+from subprocess import call, Popen
 
 
 # globals
@@ -23,29 +24,46 @@ AWAY_MINUTES = 10
 ACTION_FREQUENCY = 5
 PLUGIN_DIR = dirname(realpath(__file__))
 API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
+SETTINGS = '%s.sublime-settings' % __name__
 LAST_ACTION = 0
 LAST_USAGE = 0
 LAST_FILE = None
 BUSY = False
 
 
-# To be backwards compatible, rename config file
-if isfile(join(expanduser('~'), '.wakatime')):
-    call([
-        'mv',
-        join(expanduser('~'), '.wakatime'),
-        join(expanduser('~'), '.wakatime.conf')
-    ])
+# Convert ~/.wakatime.conf to WakaTime.sublime-settings
+def convert_config_to_sublime_settings():
+    # To be backwards compatible, rename config file
+    settings = sublime.load_settings(SETTINGS)
+    api_key = settings.get('api_key', '')
+    try:
+        with open(join(expanduser('~'), '.wakatime.conf')) as old_file:
+            for line in old_file:
+                line = line.split('=', 1)
+                if line[0] == 'api_key':
+                    api_key = line[1].strip()
+    except IOError:
+        pass
+    settings.set('api_key', api_key)
+    sublime.save_settings(SETTINGS)
+    try:
+        os.remove(join(expanduser('~'), '.wakatime.conf'))
+    except:
+        pass
+convert_config_to_sublime_settings()
 
 
-# Create config file if it does not already exist
-if not isfile(join(expanduser('~'), '.wakatime.conf')):
-    def got_key(text):
-        if text:
-            cfg = open(join(expanduser('~'), '.wakatime.conf'), 'w')
-            cfg.write('api_key=%s' % text)
-            cfg.close()
-    sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
+# Prompt for api key if not set in WakaTime.sublime-settings
+def check_api_key():
+    settings = sublime.load_settings(SETTINGS)
+    api_key = settings.get('api_key', None)
+    if not api_key:
+        def got_key(text):
+            if text:
+                settings.set('api_key', str(api_key))
+                sublime.save_settings(SETTINGS)
+        sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
+check_api_key()
 
 
 def python_binary():
@@ -73,15 +91,16 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
             '--plugin', 'sublime-wakatime/%s' % __version__,
             #'--verbose',
         ]
+        api_key = sublime.load_settings(SETTINGS).get('api_key', None)
+        if api_key:
+            cmd.extend(['--key', str(api_key)])
         if isWrite:
             cmd.append('--write')
         if endtime:
             cmd.extend(['--endtime', str('%f' % endtime)])
         #print(cmd)
         if platform.system() == 'Windows':
-            startupinfo = STARTUPINFO()
-            startupinfo.dwFlags |= STARTF_USESHOWWINDOW
-            Popen(cmd, startupinfo=startupinfo)
+            Popen(cmd, shell=False)
         else:
             with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
                 Popen(cmd, stderr=stderr)
@@ -123,6 +142,8 @@ def enough_time_passed(now):
 
 
 def should_prompt_user(now):
+    if not sublime.load_settings(SETTINGS).get('prompt_after_away', False):
+        return False
     if not LAST_USAGE:
         return False
     duration = now - LAST_USAGE

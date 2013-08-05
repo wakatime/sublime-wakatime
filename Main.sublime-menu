@@ -1,0 +1,32 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "WakaTime",
+                "mnemonic": "W",
+                "id": "wakatime-settings",
+                "children":
+                [
+                    {
+                        "command": "open_file", "args":
+                        {
+                            "file": "${packages}/WakaTime/WakaTime.sublime-settings"
+                        },
+                        "caption": "Settings – Default"
+                    },
+                    {
+                        "command": "open_file", "args":
+                        {
+                            "file": "${packages}/User/WakaTime/WakaTime.sublime-settings"
+                        },
+                        "caption": "Settings – User"
+                    }
+                ]
+            }
+        ]
+    }
+]
