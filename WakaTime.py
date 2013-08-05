@@ -1,5 +1,5 @@
 """ ==========================================================
-File:        sublime-wakatime.py
+File:        WakaTime.py
 Description: Automatic time tracking for Sublime Text 2 and 3.
 Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
