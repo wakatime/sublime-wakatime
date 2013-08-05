@@ -36,20 +36,21 @@ def convert_config_to_sublime_settings():
     # To be backwards compatible, rename config file
     settings = sublime.load_settings(SETTINGS)
     api_key = settings.get('api_key', '')
-    try:
-        with open(join(expanduser('~'), '.wakatime.conf')) as old_file:
-            for line in old_file:
-                line = line.split('=', 1)
-                if line[0] == 'api_key':
-                    api_key = line[1].strip()
-    except IOError:
-        pass
+    if not api_key:
+        try:
+            with open(join(expanduser('~'), '.wakatime.conf')) as old_file:
+                for line in old_file:
+                    line = line.split('=', 1)
+                    if line[0] == 'api_key':
+                        api_key = line[1].strip()
+            try:
+                os.remove(join(expanduser('~'), '.wakatime.conf'))
+            except:
+                pass
+        except IOError:
+            pass
     settings.set('api_key', api_key)
     sublime.save_settings(SETTINGS)
-    try:
-        os.remove(join(expanduser('~'), '.wakatime.conf'))
-    except:
-        pass
 convert_config_to_sublime_settings()
 
 
