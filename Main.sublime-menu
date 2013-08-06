@@ -21,7 +21,7 @@
                     {
                         "command": "open_file", "args":
                         {
-                            "file": "${packages}/User/WakaTime/WakaTime.sublime-settings"
+                            "file": "${packages}/User/WakaTime.sublime-settings"
                         },
                         "caption": "Settings – User"
                     }
