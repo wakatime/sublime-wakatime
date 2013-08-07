@@ -10,8 +10,8 @@
             "platforms": {
                 "*": [
                     {
-                        "version": "0.3.2",
-                        "url": "https://codeload.github.com/wakatime/sublime-wakatime/zip/0.3.2"
+                        "version": "1.0.0",
+                        "url": "https://codeload.github.com/wakatime/sublime-wakatime/zip/1.0.0"
                     }
                 ]
             }
