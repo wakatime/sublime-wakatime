@@ -24,15 +24,16 @@ AWAY_MINUTES = 10
 ACTION_FREQUENCY = 5
 PLUGIN_DIR = dirname(realpath(__file__))
 API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
-SETTINGS = '%s.sublime-settings' % __name__
+SETTINGS = 'WakaTime.sublime-settings'
 LAST_ACTION = 0
 LAST_USAGE = 0
 LAST_FILE = None
 BUSY = False
 
 
-# Convert ~/.wakatime.conf to WakaTime.sublime-settings
-def convert_config_to_sublime_settings():
+def setup_settings_file():
+    """ Convert ~/.wakatime.conf to WakaTime.sublime-settings
+    """
     # To be backwards compatible, rename config file
     settings = sublime.load_settings(SETTINGS)
     api_key = settings.get('api_key', '')
@@ -49,22 +50,28 @@ def convert_config_to_sublime_settings():
                 pass
         except IOError:
             pass
-    settings.set('api_key', api_key)
+    settings.set('api_key', str(api_key))
     sublime.save_settings(SETTINGS)
-convert_config_to_sublime_settings()
 
 
-# Prompt for api key if not set in WakaTime.sublime-settings
-def check_api_key():
+def get_api_key():
+    """If api key not set, prompt user to enter one then save
+    to WakaTime.sublime-settings.
+    """
     settings = sublime.load_settings(SETTINGS)
-    api_key = settings.get('api_key', None)
+    api_key = settings.get('api_key', '')
     if not api_key:
         def got_key(text):
             if text:
-                settings.set('api_key', str(api_key))
+                settings = sublime.load_settings(SETTINGS)
+                settings.set('api_key', str(text))
                 sublime.save_settings(SETTINGS)
-        sublime.active_window().show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
-check_api_key()
+        window = sublime.active_window()
+        if window is not None:
+            window.show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
+        return sublime.load_settings(SETTINGS).get('api_key', '')
+    else:
+        return api_key
 
 
 def python_binary():
@@ -92,7 +99,7 @@ def api(targetFile, timestamp, isWrite=False, endtime=0):
             '--plugin', 'sublime-wakatime/%s' % __version__,
             #'--verbose',
         ]
-        api_key = sublime.load_settings(SETTINGS).get('api_key', None)
+        api_key = get_api_key()
         if api_key:
             cmd.extend(['--key', str(api_key)])
         if isWrite:
@@ -206,3 +213,9 @@ class WakatimeListener(sublime_plugin.EventListener):
             #print(['modified', view.file_name()])
             handle_normal_action(view)
 
+
+def plugin_loaded():
+    get_api_key()
+    setup_settings_file()
+if int(sublime.version()) < 3000:
+    plugin_loaded()

@@ -1,6 +1,0 @@
-WakaTime Changes for v0.3.1
-
-- no more prompting after away by default
-- api key moved to new WakaTime.sublime-settings file
-- new setting to disable or enable the away popup
-- fixes for Windows platform
