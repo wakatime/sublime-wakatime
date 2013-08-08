@@ -30,10 +30,15 @@ SETTINGS = {}
 LAST_ACTION = 0
 LAST_FILE = None
 BUSY = False
+HAS_SSL = False
 
-
-sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
-import wakatime
+try:
+    import ssl
+    HAS_SSL = True
+    sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+    import wakatime
+except ImportError:
+    from subprocess import Popen
 
 
 def setup_settings_file():
@@ -80,6 +85,18 @@ def get_api_key():
             print('Error: Could not prompt for api key because no window found.')
     return api_key
 
+def python_binary():
+    python = 'python'
+    if platform.system() == 'Windows':
+        python = 'pythonw'
+        try:
+            Popen([python, '--version'])
+        except:
+            for path in glob.iglob('/python*'):
+                if exists(realpath(join(path, 'pythonw.exe'))):
+                    python = realpath(join(path, 'pythonw'))
+                    break
+    return python
 
 def enough_time_passed(now):
     if now - LAST_ACTION > ACTION_FREQUENCY * 60:
@@ -127,12 +144,20 @@ class SendActionThread(threading.Thread):
             '--time', str('%f' % self.timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
             '--key', str(bytes.decode(api_key.encode('utf8'))),
-            '--verbose',
+            #'--verbose',
         ]
         if self.isWrite:
             cmd.append('--write')
         #print(cmd)
-        wakatime.main(cmd)
+        if HAS_SSL:
+            wakatime.main(cmd)
+        else:
+            cmd.insert(0, python_binary())
+            if platform.system() == 'Windows':
+                Popen(cmd, shell=False)
+            else:
+                with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
+                    Popen(cmd, stderr=stderr)
 
 
 def plugin_loaded():
