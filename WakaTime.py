@@ -13,134 +13,72 @@ import sublime_plugin
 import glob
 import os
 import platform
+import sys
 import time
+import threading
 import uuid
 from os.path import expanduser, dirname, realpath, isfile, join, exists
-from subprocess import call, Popen
 
 
 # globals
-AWAY_MINUTES = 10
 ACTION_FREQUENCY = 5
+ST_VERSION = int(sublime.version())
 PLUGIN_DIR = dirname(realpath(__file__))
 API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
-SETTINGS = 'WakaTime.sublime-settings'
+SETTINGS_FILE = 'WakaTime.sublime-settings'
+SETTINGS = {}
 LAST_ACTION = 0
-LAST_USAGE = 0
 LAST_FILE = None
 BUSY = False
+
+
+sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+import wakatime
 
 
 def setup_settings_file():
     """ Convert ~/.wakatime.conf to WakaTime.sublime-settings
     """
+    global SETTINGS
     # To be backwards compatible, rename config file
-    settings = sublime.load_settings(SETTINGS)
-    api_key = settings.get('api_key', '')
+    SETTINGS = sublime.load_settings(SETTINGS_FILE)
+    api_key = SETTINGS.get('api_key', '')
     if not api_key:
+        api_key = ''
         try:
             with open(join(expanduser('~'), '.wakatime.conf')) as old_file:
                 for line in old_file:
                     line = line.split('=', 1)
                     if line[0] == 'api_key':
-                        api_key = line[1].strip()
+                        api_key = str(line[1].strip())
             try:
                 os.remove(join(expanduser('~'), '.wakatime.conf'))
             except:
                 pass
         except IOError:
             pass
-    settings.set('api_key', str(api_key))
-    sublime.save_settings(SETTINGS)
+    SETTINGS.set('api_key', api_key)
+    sublime.save_settings(SETTINGS_FILE)
 
 
 def get_api_key():
     """If api key not set, prompt user to enter one then save
     to WakaTime.sublime-settings.
     """
-    settings = sublime.load_settings(SETTINGS)
-    api_key = settings.get('api_key', '')
+    global SETTINGS
+    api_key = SETTINGS.get('api_key', '')
     if not api_key:
         def got_key(text):
             if text:
-                settings = sublime.load_settings(SETTINGS)
-                settings.set('api_key', str(text))
-                sublime.save_settings(SETTINGS)
+                api_key = str(text)
+                SETTINGS.set('api_key', api_key)
+                sublime.save_settings(SETTINGS_FILE)
         window = sublime.active_window()
-        if window is not None:
+        if window:
             window.show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
-        return sublime.load_settings(SETTINGS).get('api_key', '')
-    else:
-        return api_key
-
-
-def python_binary():
-    python = 'python'
-    if platform.system() == 'Windows':
-        python = 'pythonw'
-        try:
-            Popen([python, '--version'])
-        except:
-            for path in glob.iglob('/python*'):
-                if exists(realpath(join(path, 'pythonw.exe'))):
-                    python = realpath(join(path, 'pythonw'))
-                    break
-    return python
-
-
-def api(targetFile, timestamp, isWrite=False, endtime=0):
-    global LAST_ACTION, LAST_USAGE, LAST_FILE
-    if not targetFile:
-        targetFile = LAST_FILE
-    if targetFile:
-        cmd = [python_binary(), API_CLIENT,
-            '--file', targetFile,
-            '--time', str('%f' % timestamp),
-            '--plugin', 'sublime-wakatime/%s' % __version__,
-            #'--verbose',
-        ]
-        api_key = get_api_key()
-        if api_key:
-            cmd.extend(['--key', str(api_key)])
-        if isWrite:
-            cmd.append('--write')
-        if endtime:
-            cmd.extend(['--endtime', str('%f' % endtime)])
-        #print(cmd)
-        if platform.system() == 'Windows':
-            Popen(cmd, shell=False)
         else:
-            with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
-                Popen(cmd, stderr=stderr)
-        LAST_ACTION = timestamp
-        if endtime and endtime > LAST_ACTION:
-            LAST_ACTION = endtime
-        LAST_FILE = targetFile
-        LAST_USAGE = LAST_ACTION
-    else:
-        LAST_USAGE = timestamp
-
-
-def away(now):
-    duration = now - LAST_USAGE
-    minutes = ''
-    units = 'second'
-    if duration >= 60:
-        duration = int(duration / 60)
-        units = 'minute'
-        if duration >= 60:
-            remainder = duration % 60
-            if remainder > 0:
-                minutes = ' and %d minute' % remainder
-            if remainder > 1:
-                minutes = minutes + 's'
-            duration = int(duration / 60)
-            units = 'hour'
-    if duration > 1:
-        units = units + 's'
-    return sublime\
-        .ok_cancel_dialog("You were away %d %s%s. Add time to current file?"\
-        % (duration, units, minutes), 'Yes, log this time')
+            print('Error: Could not prompt for api key because no window found.')
+    return api_key
 
 
 def enough_time_passed(now):
@@ -149,73 +87,82 @@ def enough_time_passed(now):
     return False
 
 
-def should_prompt_user(now):
-    if not sublime.load_settings(SETTINGS).get('prompt_after_away', False):
-        return False
-    if not LAST_USAGE:
-        return False
-    duration = now - LAST_USAGE
-    if duration > AWAY_MINUTES * 60:
-        return True
-    return False
-
-
 def handle_write_action(view):
-    global LAST_USAGE, BUSY
-    BUSY = True
-    targetFile = view.file_name()
-    now = time.time()
-    if enough_time_passed(now) or (LAST_FILE and targetFile != LAST_FILE):
-        if should_prompt_user(now):
-            if away(now):
-                api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
-            else:
-                api(targetFile, now, isWrite=True)
-        else:
-            api(targetFile, now, endtime=LAST_ACTION, isWrite=True)
-    else:
-        api(targetFile, now, isWrite=True)
-    BUSY = False
+    thread = SendActionThread(view.file_name(), isWrite=True)
+    thread.start()
 
 
 def handle_normal_action(view):
-    global LAST_USAGE, BUSY
-    BUSY = True
-    targetFile = view.file_name()
-    now = time.time()
-    if enough_time_passed(now) or (LAST_FILE and targetFile != LAST_FILE):
-        if should_prompt_user(now):
-            if away(now):
-                api(targetFile, now, endtime=LAST_ACTION)
-            else:
-                api(targetFile, now)
-        else:
-            api(targetFile, now, endtime=LAST_ACTION)
-    else:
-        LAST_USAGE = now
-    BUSY = False
+    thread = SendActionThread(view.file_name())
+    thread.start()
+
+
+class SendActionThread(threading.Thread):
+
+    def __init__(self, targetFile, isWrite=False, force=False):
+        threading.Thread.__init__(self)
+        self.targetFile = targetFile
+        self.isWrite = isWrite
+        self.force = force
+
+    def run(self):
+        sublime.set_timeout(self.check, 0)
+
+    def check(self):
+        global LAST_ACTION, LAST_FILE
+        if self.targetFile:
+            self.timestamp = time.time()
+            if self.force or self.isWrite or self.targetFile != LAST_FILE or enough_time_passed(self.timestamp):
+                LAST_FILE = self.targetFile
+                LAST_ACTION = self.timestamp
+                self.send()
+
+    def send(self):
+        api_key = get_api_key()
+        if not api_key:
+            return
+        cmd = [
+            API_CLIENT,
+            '--file', self.targetFile,
+            '--time', str('%f' % self.timestamp),
+            '--plugin', 'sublime-wakatime/%s' % __version__,
+            '--key', str(bytes.decode(api_key.encode('utf8'))),
+            '--verbose',
+        ]
+        if self.isWrite:
+            cmd.append('--write')
+        #print(cmd)
+        wakatime.main(cmd)
+
+
+def plugin_loaded():
+    setup_settings_file()
+
+
+# need to call plugin_loaded because only ST3 will auto-call it
+if ST_VERSION < 3000:
+    plugin_loaded()
 
 
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        if view.file_name():
-            #print(['saved', view.file_name()])
+        global BUSY
+        if not BUSY:
+            BUSY = True
             handle_write_action(view)
+            BUSY = False
 
     def on_activated(self, view):
-        if view.file_name() and not BUSY:
-            #print(['activated', view.file_name()])
+        global BUSY
+        if not BUSY:
+            BUSY = True
             handle_normal_action(view)
+            BUSY = False
 
     def on_modified(self, view):
-        if view.file_name() and not BUSY:
-            #print(['modified', view.file_name()])
+        global BUSY
+        if not BUSY:
+            BUSY = True
             handle_normal_action(view)
-
-
-def plugin_loaded():
-    get_api_key()
-    setup_settings_file()
-if int(sublime.version()) < 3000:
-    plugin_loaded()
+            BUSY = False
