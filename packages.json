@@ -6,12 +6,12 @@
             "description": "Automatic time tracking for Sublime Text 2 & 3",
             "author": "wakati.me",
             "homepage": "https://github.com/wakatime/sublime-wakatime",
-            "last_modified": "2013-08-08 09:42",
+            "last_modified": "2013-08-08 09:44",
             "platforms": {
                 "*": [
                     {
-                        "version": "0.4.0",
-                        "url": "https://codeload.github.com/wakatime/sublime-wakatime/zip/0.4.0"
+                        "version": "0.4.1",
+                        "url": "https://codeload.github.com/wakatime/sublime-wakatime/zip/0.4.1"
                     }
                 ]
             }
