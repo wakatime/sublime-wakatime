@@ -6,7 +6,7 @@ automatic time tracking for Sublime Text 2 & 3
 Installation
 ------------
 
-Heads Up! WakaTime depends on [Python](http://www.python.org/getit/) being installed to work correctly.
+Heads Up! For Sublime Text 2 on Windows & Linux, WakaTime depends on [Python](http://www.python.org/getit/) being installed to work correctly.
 
 1. Get an api key from: https://wakati.me
 
