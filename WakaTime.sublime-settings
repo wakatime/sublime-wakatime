@@ -1,10 +1,4 @@
 {
-    // Prompt after being away.
-    // If true, will prompt user after 10 minutes of inactivity.
-    // If false, only logs actual activity inside Sublime.
-    // Defaults to false.
-    "prompt_after_away": false,
-
     // Your api key from https://www.wakati.me/#apikey
     // Set this in your User specific WakaTime.sublime-settings file.
     "api_key": ""
