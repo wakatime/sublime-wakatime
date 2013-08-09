@@ -1,5 +1,12 @@
+// WakaTime Default Settings
+// Use this as a reference when editing your local User settings.
+// This settings file will be overwritten when upgrading.
+
 {
     // Your api key from https://www.wakati.me/#apikey
     // Set this in your User specific WakaTime.sublime-settings file.
-    "api_key": ""
+    "api_key": "",
+    
+    // Debug mode. Set to true for verbose logging. Defaults to false.
+    "debug": false
 }

@@ -32,13 +32,17 @@ LAST_FILE = None
 BUSY = False
 HAS_SSL = False
 
+# check if we have SSL support
 try:
     import ssl
     HAS_SSL = True
-    sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
-    import wakatime
 except ImportError:
     from subprocess import Popen
+
+# import wakatime package
+if HAS_SSL:
+    sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+    import wakatime
 
 
 def setup_settings_file():
@@ -85,6 +89,7 @@ def get_api_key():
             print('Error: Could not prompt for api key because no window found.')
     return api_key
 
+
 def python_binary():
     python = 'python'
     if platform.system() == 'Windows':
@@ -97,6 +102,7 @@ def python_binary():
                     python = realpath(join(path, 'pythonw'))
                     break
     return python
+
 
 def enough_time_passed(now):
     if now - LAST_ACTION > ACTION_FREQUENCY * 60:
@@ -144,11 +150,12 @@ class SendActionThread(threading.Thread):
             '--time', str('%f' % self.timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
             '--key', str(bytes.decode(api_key.encode('utf8'))),
-            #'--verbose',
         ]
         if self.isWrite:
             cmd.append('--write')
-        #print(cmd)
+        if SETTINGS.get('debug'):
+            cmd.append('--verbose')
+            print(cmd)
         if HAS_SSL:
             wakatime.main(cmd)
         else:
