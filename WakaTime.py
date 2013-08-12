@@ -30,19 +30,18 @@ SETTINGS = {}
 LAST_ACTION = 0
 LAST_FILE = None
 BUSY = False
-HAS_SSL = False
 
 # check if we have SSL support
 try:
     import ssl
     HAS_SSL = True
 except ImportError:
-    from subprocess import Popen
+    #from subprocess import Popen
+    pass
 
 # import wakatime package
-if HAS_SSL:
-    sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
-    import wakatime
+sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+import wakatime
 
 
 def setup_settings_file():
@@ -156,15 +155,15 @@ class SendActionThread(threading.Thread):
         if SETTINGS.get('debug'):
             cmd.append('--verbose')
             print(cmd)
-        if HAS_SSL:
-            wakatime.main(cmd)
-        else:
+        #if HAS_SSL:
+        wakatime.main(cmd)
+        """else:
             cmd.insert(0, python_binary())
             if platform.system() == 'Windows':
                 Popen(cmd, shell=False)
             else:
                 with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
-                    Popen(cmd, stderr=stderr)
+                    Popen(cmd, stderr=stderr)"""
 
 
 def plugin_loaded():
