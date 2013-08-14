@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 import sublime
 import sublime_plugin
@@ -29,8 +29,8 @@ SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
 LAST_ACTION = 0
 LAST_FILE = None
-BUSY = False
 HAS_SSL = False
+LOCK = threading.RLock()
 
 # check if we have SSL support
 try:
@@ -70,24 +70,20 @@ def setup_settings_file():
     sublime.save_settings(SETTINGS_FILE)
 
 
-def get_api_key():
-    """If api key not set, prompt user to enter one then save
-    to WakaTime.sublime-settings.
-    """
+def prompt_api_key():
     global SETTINGS
-    api_key = SETTINGS.get('api_key', '')
-    if not api_key:
+    if not SETTINGS.get('api_key'):
         def got_key(text):
             if text:
-                api_key = str(text)
-                SETTINGS.set('api_key', api_key)
+                SETTINGS.set('api_key', str(text))
                 sublime.save_settings(SETTINGS_FILE)
         window = sublime.active_window()
         if window:
-            window.show_input_panel('Enter your WakaTi.me api key:', '', got_key, None, None)
+            window.show_input_panel('Enter your WakaTime api key:', '', got_key, None, None)
+            return True
         else:
             print('Error: Could not prompt for api key because no window found.')
-    return api_key
+    return False
 
 
 def python_binary():
@@ -111,21 +107,23 @@ def enough_time_passed(now):
 
 
 def handle_write_action(view):
-    global LAST_FILE, LAST_ACTION
-    targetFile = view.file_name()
-    thread = SendActionThread(targetFile, isWrite=True)
-    thread.start()
-    LAST_FILE = targetFile
-    LAST_ACTION = time.time()
+    global LOCK, LAST_FILE, LAST_ACTION
+    with LOCK:
+        targetFile = view.file_name()
+        thread = SendActionThread(targetFile, isWrite=True)
+        thread.start()
+        LAST_FILE = targetFile
+        LAST_ACTION = time.time()
 
 
 def handle_normal_action(view):
-    global LAST_FILE, LAST_ACTION
-    targetFile = view.file_name()
-    thread = SendActionThread(targetFile)
-    thread.start()
-    LAST_FILE = targetFile
-    LAST_ACTION = time.time()
+    global LOCK, LAST_FILE, LAST_ACTION
+    with LOCK:
+        targetFile = view.file_name()
+        thread = SendActionThread(targetFile)
+        thread.start()
+        LAST_FILE = targetFile
+        LAST_ACTION = time.time()
 
 
 class SendActionThread(threading.Thread):
@@ -136,7 +134,7 @@ class SendActionThread(threading.Thread):
         self.isWrite = isWrite
         self.force = force
         self.debug = SETTINGS.get('debug')
-        self.api_key = get_api_key()
+        self.api_key = SETTINGS.get('api_key', '')
 
     def run(self):
         if self.targetFile:
@@ -145,7 +143,6 @@ class SendActionThread(threading.Thread):
                 self.send()
 
     def send(self):
-        time.sleep(5)
         if not self.api_key:
             print('missing api key')
             return
@@ -174,6 +171,12 @@ class SendActionThread(threading.Thread):
 
 def plugin_loaded():
     setup_settings_file()
+    after_loaded()
+
+
+def after_loaded():
+    if not prompt_api_key():
+        sublime.set_timeout(after_loaded, 500)
 
 
 # need to call plugin_loaded because only ST3 will auto-call it
@@ -184,22 +187,10 @@ if ST_VERSION < 3000:
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        global BUSY
-        if not BUSY:
-            BUSY = True
-            handle_write_action(view)
-            BUSY = False
+        handle_write_action(view)
 
     def on_activated(self, view):
-        global BUSY
-        if not BUSY:
-            BUSY = True
-            handle_normal_action(view)
-            BUSY = False
+        handle_normal_action(view)
 
     def on_modified(self, view):
-        global BUSY
-        if not BUSY:
-            BUSY = True
-            handle_normal_action(view)
-            BUSY = False
+        handle_normal_action(view)
