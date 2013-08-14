@@ -111,13 +111,21 @@ def enough_time_passed(now):
 
 
 def handle_write_action(view):
-    thread = SendActionThread(view.file_name(), isWrite=True)
+    global LAST_FILE, LAST_ACTION
+    targetFile = view.file_name()
+    thread = SendActionThread(targetFile, isWrite=True)
     thread.start()
+    LAST_FILE = targetFile
+    LAST_ACTION = time.time()
 
 
 def handle_normal_action(view):
-    thread = SendActionThread(view.file_name())
+    global LAST_FILE, LAST_ACTION
+    targetFile = view.file_name()
+    thread = SendActionThread(targetFile)
     thread.start()
+    LAST_FILE = targetFile
+    LAST_ACTION = time.time()
 
 
 class SendActionThread(threading.Thread):
@@ -127,33 +135,30 @@ class SendActionThread(threading.Thread):
         self.targetFile = targetFile
         self.isWrite = isWrite
         self.force = force
+        self.debug = SETTINGS.get('debug')
+        self.api_key = get_api_key()
 
     def run(self):
-        sublime.set_timeout(self.check, 0)
-
-    def check(self):
-        global LAST_ACTION, LAST_FILE
         if self.targetFile:
             self.timestamp = time.time()
             if self.force or self.isWrite or self.targetFile != LAST_FILE or enough_time_passed(self.timestamp):
-                LAST_FILE = self.targetFile
-                LAST_ACTION = self.timestamp
                 self.send()
 
     def send(self):
-        api_key = get_api_key()
-        if not api_key:
+        time.sleep(5)
+        if not self.api_key:
+            print('missing api key')
             return
         cmd = [
             API_CLIENT,
             '--file', self.targetFile,
             '--time', str('%f' % self.timestamp),
             '--plugin', 'sublime-wakatime/%s' % __version__,
-            '--key', str(bytes.decode(api_key.encode('utf8'))),
+            '--key', str(bytes.decode(self.api_key.encode('utf8'))),
         ]
         if self.isWrite:
             cmd.append('--write')
-        if SETTINGS.get('debug'):
+        if self.debug:
             cmd.append('--verbose')
             print(cmd)
         if HAS_SSL:
