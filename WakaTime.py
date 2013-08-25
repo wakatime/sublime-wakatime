@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '1.3.0'
+__version__ = '1.3.2'
 
 import sublime
 import sublime_plugin
@@ -135,11 +135,12 @@ class SendActionThread(threading.Thread):
         self.force = force
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
+        self.last_file = LAST_FILE
 
     def run(self):
         if self.targetFile:
             self.timestamp = time.time()
-            if self.force or self.isWrite or self.targetFile != LAST_FILE or enough_time_passed(self.timestamp):
+            if self.force or self.isWrite or self.targetFile != self.last_file or enough_time_passed(self.timestamp):
                 self.send()
 
     def send(self):
