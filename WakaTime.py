@@ -147,11 +147,12 @@ class SendActionThread(threading.Thread):
         if not self.api_key:
             print('missing api key')
             return
+        ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
         cmd = [
             API_CLIENT,
             '--file', self.targetFile,
             '--time', str('%f' % self.timestamp),
-            '--plugin', 'sublime-wakatime/%s' % __version__,
+            '--plugin', ua,
             '--key', str(bytes.decode(self.api_key.encode('utf8'))),
         ]
         if self.isWrite:
