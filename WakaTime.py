@@ -159,11 +159,14 @@ class SendActionThread(threading.Thread):
             cmd.append('--write')
         if self.debug:
             cmd.append('--verbose')
-            print(cmd)
         if HAS_SSL:
             wakatime.main(cmd)
+            if self.debug:
+                print(cmd)
         else:
             cmd.insert(0, python_binary())
+            if self.debug:
+                print(cmd)
             if platform.system() == 'Windows':
                 Popen(cmd, shell=False)
             else:
