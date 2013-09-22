@@ -36,13 +36,13 @@ LOCK = threading.RLock()
 try:
     import ssl
     HAS_SSL = True
+except ImportError:
+    from subprocess import Popen
 
+if HAS_SSL:
     # import wakatime package
     sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
     import wakatime
-
-except ImportError:
-    from subprocess import Popen
 
 
 def setup_settings_file():
