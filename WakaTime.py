@@ -162,9 +162,11 @@ class SendActionThread(threading.Thread):
         if self.debug:
             cmd.append('--verbose')
         if HAS_SSL:
-            wakatime.main(cmd)
             if self.debug:
                 print(cmd)
+            code = wakatime.main(cmd)
+            if code != 0:
+                print('Error: Response code %d from wakatime package' % code)
         else:
             cmd.insert(0, python_binary())
             if self.debug:
