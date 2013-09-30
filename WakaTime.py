@@ -35,8 +35,10 @@ LOCK = threading.RLock()
 # check if we have SSL support
 try:
     import ssl
+    import socket
+    socket.ssl
     HAS_SSL = True
-except ImportError:
+except (ImportError, AttributeError):
     from subprocess import Popen
 
 if HAS_SSL:
