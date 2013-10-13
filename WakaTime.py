@@ -91,14 +91,14 @@ def prompt_api_key():
 def python_binary():
     python = 'python'
     if platform.system() == 'Windows':
-        python = 'pythonw'
+        for path in glob.iglob('/python*'):
+            if exists(realpath(join(path, 'pythonw.exe'))):
+                return realpath(join(path, 'pythonw'))
         try:
+            python = 'pythonw'
             Popen([python, '--version'])
         except:
-            for path in glob.iglob('/python*'):
-                if exists(realpath(join(path, 'pythonw.exe'))):
-                    python = realpath(join(path, 'pythonw'))
-                    break
+            python = None
     return python
 
 
@@ -166,16 +166,20 @@ class SendActionThread(threading.Thread):
                 print(cmd)
             code = wakatime.main(cmd)
             if code != 0:
-                print('Error: Response code %d from wakatime package' % code)
+                print('Error: Response code %d from wakatime package.' % code)
         else:
-            cmd.insert(0, python_binary())
-            if self.debug:
-                print(cmd)
-            if platform.system() == 'Windows':
-                Popen(cmd, shell=False)
+            python = python_binary()
+            if not python:
+                print('Error: Could not find python binary.')
             else:
-                with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
-                    Popen(cmd, stderr=stderr)
+                cmd.insert(0, python)
+                if self.debug:
+                    print(cmd)
+                if platform.system() == 'Windows':
+                    Popen(cmd, shell=False)
+                else:
+                    with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
+                        Popen(cmd, stderr=stderr)
 
 
 def plugin_loaded():
