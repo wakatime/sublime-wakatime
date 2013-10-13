@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.4 (2013-10-13)
+++++++++++++++++++
+
+- read git branch from .git/HEAD without running command line git client
+
+
 1.4.3 (2013-09-30)
 ++++++++++++++++++
 
