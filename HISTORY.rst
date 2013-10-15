@@ -3,6 +3,13 @@ History
 -------
 
 
+1.4.5 (2013-10-14)
+++++++++++++++++++
+
+- remove support for subversion projects on Windows to prevent cmd window popups
+- ignore all errors from pygments library
+
+
 1.4.4 (2013-10-13)
 ++++++++++++++++++
 
