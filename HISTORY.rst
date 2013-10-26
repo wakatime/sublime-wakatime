@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.6 (2013-10-25)
+++++++++++++++++++
+
+- force some file extensions to be recognized as certain language
+
+
 1.4.5 (2013-10-14)
 ++++++++++++++++++
 
