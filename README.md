@@ -1,7 +1,7 @@
 sublime-wakatime
 ================
 
-Automatic time tracking for Sublime Text 2 & 3.
+Fully automatic time tracking for Sublime Text 2 & 3.
 
 Installation
 ------------
