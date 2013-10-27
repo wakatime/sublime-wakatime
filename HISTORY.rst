@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.7 (2013-10-26)
+++++++++++++++++++
+
+- simplify some language lexer names into more common versions
+
+
 1.4.6 (2013-10-25)
 ++++++++++++++++++
 
