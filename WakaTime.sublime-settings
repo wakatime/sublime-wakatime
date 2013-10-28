@@ -9,7 +9,7 @@
     
     // Ignore files; Files (including absolute paths) that match one of these
     // POSIX regular expressions will not be logged.
-    "ignore": ['^/tmp/', '^/etc/', '^/var/'],
+    "ignore": ["^/tmp/", "^/etc/", "^/var/"],
     
     // Debug mode. Set to true for verbose logging. Defaults to false.
     "debug": false
