@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.8 (2013-10-27)
+++++++++++++++++++
+
+- new setting to ignore files that match a regular expression pattern
+
+
 1.4.7 (2013-10-26)
 ++++++++++++++++++
 
