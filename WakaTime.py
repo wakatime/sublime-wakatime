@@ -47,31 +47,6 @@ if HAS_SSL:
     import wakatime
 
 
-def setup_settings_file():
-    """ Convert ~/.wakatime.conf to WakaTime.sublime-settings
-    """
-    global SETTINGS
-    # To be backwards compatible, rename config file
-    SETTINGS = sublime.load_settings(SETTINGS_FILE)
-    api_key = SETTINGS.get('api_key', '')
-    if not api_key:
-        api_key = ''
-        try:
-            with open(join(expanduser('~'), '.wakatime.conf')) as old_file:
-                for line in old_file:
-                    line = line.split('=', 1)
-                    if line[0] == 'api_key':
-                        api_key = str(line[1].strip())
-            try:
-                os.remove(join(expanduser('~'), '.wakatime.conf'))
-            except:
-                pass
-        except IOError:
-            pass
-    SETTINGS.set('api_key', api_key)
-    sublime.save_settings(SETTINGS_FILE)
-
-
 def prompt_api_key():
     global SETTINGS
     if not SETTINGS.get('api_key'):
@@ -107,41 +82,32 @@ def enough_time_passed(now):
     return False
 
 
-def handle_write_action(view):
+def handle_action(view, is_write=False):
     global LOCK, LAST_FILE, LAST_ACTION
     with LOCK:
-        targetFile = view.file_name()
-        thread = SendActionThread(targetFile, isWrite=True)
+        target_file = view.file_name()
+        thread = SendActionThread(target_file, is_write=is_write)
         thread.start()
-        LAST_FILE = targetFile
-        LAST_ACTION = time.time()
-
-
-def handle_normal_action(view):
-    global LOCK, LAST_FILE, LAST_ACTION
-    with LOCK:
-        targetFile = view.file_name()
-        thread = SendActionThread(targetFile)
-        thread.start()
-        LAST_FILE = targetFile
+        LAST_FILE = target_file
         LAST_ACTION = time.time()
 
 
 class SendActionThread(threading.Thread):
 
-    def __init__(self, targetFile, isWrite=False, force=False):
+    def __init__(self, target_file, is_write=False, force=False):
         threading.Thread.__init__(self)
-        self.targetFile = targetFile
-        self.isWrite = isWrite
+        self.target_file = target_file
+        self.is_write = is_write
         self.force = force
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
+        self.ignore = SETTINGS.get('ignore', [])
         self.last_file = LAST_FILE
 
     def run(self):
-        if self.targetFile:
+        if self.target_file:
             self.timestamp = time.time()
-            if self.force or self.isWrite or self.targetFile != self.last_file or enough_time_passed(self.timestamp):
+            if self.force or self.is_write or self.target_file != self.last_file or enough_time_passed(self.timestamp):
                 self.send()
 
     def send(self):
@@ -151,13 +117,15 @@ class SendActionThread(threading.Thread):
         ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
         cmd = [
             API_CLIENT,
-            '--file', self.targetFile,
+            '--file', self.target_file,
             '--time', str('%f' % self.timestamp),
             '--plugin', ua,
             '--key', str(bytes.decode(self.api_key.encode('utf8'))),
         ]
-        if self.isWrite:
+        if self.is_write:
             cmd.append('--write')
+        for pattern in self.ignore:
+            cmd.extend(['--ignore', pattern])
         if self.debug:
             cmd.append('--verbose')
         if HAS_SSL:
@@ -182,7 +150,8 @@ class SendActionThread(threading.Thread):
 
 
 def plugin_loaded():
-    setup_settings_file()
+    global SETTINGS
+    SETTINGS = sublime.load_settings(SETTINGS_FILE)
     after_loaded()
 
 
@@ -199,10 +168,10 @@ if ST_VERSION < 3000:
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        handle_write_action(view)
+        handle_action(view, is_write=True)
 
     def on_activated(self, view):
-        handle_normal_action(view)
+        handle_action(view)
 
     def on_modified(self, view):
-        handle_normal_action(view)
+        handle_action(view)
