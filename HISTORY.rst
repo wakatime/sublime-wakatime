@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.9 (2013-10-28)
+++++++++++++++++++
+
+- handle case where ignore patterns not defined
+
+
 1.4.8 (2013-10-27)
 ++++++++++++++++++
 
