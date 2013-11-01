@@ -5,7 +5,7 @@ Maintainer:  WakaTi.me <support@wakatime.com>
 Website:     https://www.wakati.me/
 ==========================================================="""
 
-__version__ = '1.4.9'
+__version__ = '1.4.10'
 
 import sublime
 import sublime_plugin
