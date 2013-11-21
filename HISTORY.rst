@@ -3,6 +3,12 @@ History
 -------
 
 
+1.4.12 (2013-11-21)
++++++++++++++++++++
+
+- handle UnicodeDecodeError exceptions when json encoding log messages
+
+
 1.4.11 (2013-11-13)
 +++++++++++++++++++
 
