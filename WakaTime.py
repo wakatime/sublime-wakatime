@@ -21,14 +21,17 @@ from os.path import expanduser, dirname, realpath, isfile, join, exists
 
 
 # globals
-ACTION_FREQUENCY = 5
+ACTION_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
 PLUGIN_DIR = dirname(realpath(__file__))
 API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
 SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
-LAST_ACTION = 0
-LAST_FILE = None
+LAST_ACTION = {
+    'time': 0,
+    'file': None,
+    'is_write': False,
+}
 HAS_SSL = False
 LOCK = threading.RLock()
 
@@ -76,20 +79,24 @@ def python_binary():
     return 'python'
 
 
-def enough_time_passed(now):
-    if now - LAST_ACTION > ACTION_FREQUENCY * 60:
+def enough_time_passed(now, last_time):
+    if now - last_time > ACTION_FREQUENCY * 60:
         return True
     return False
 
 
 def handle_action(view, is_write=False):
-    global LOCK, LAST_FILE, LAST_ACTION
+    global LOCK, LAST_ACTION
     with LOCK:
         target_file = view.file_name()
-        thread = SendActionThread(target_file, is_write=is_write)
-        thread.start()
-        LAST_FILE = target_file
-        LAST_ACTION = time.time()
+        if target_file:
+            thread = SendActionThread(target_file, is_write=is_write)
+            thread.start()
+            LAST_ACTION = {
+                'file': target_file,
+                'time': time.time(),
+                'is_write': is_write,
+            }
 
 
 class SendActionThread(threading.Thread):
@@ -102,12 +109,12 @@ class SendActionThread(threading.Thread):
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
-        self.last_file = LAST_FILE
+        self.last_action = LAST_ACTION
 
     def run(self):
         if self.target_file:
             self.timestamp = time.time()
-            if self.force or self.is_write or self.target_file != self.last_file or enough_time_passed(self.timestamp):
+            if self.force or (self.is_write and not self.last_action['is_write']) or self.target_file != self.last_action['file'] or enough_time_passed(self.timestamp, self.last_action['time']):
                 self.send()
 
     def send(self):
