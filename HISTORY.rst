@@ -3,6 +3,13 @@ History
 -------
 
 
+1.5.0 (2013-11-28)
+++++++++++++++++++
+
+- increase "ping" frequency from every 5 minutes to every 2 minutes
+- prevent sending multiple api requests when saving the same file
+
+
 1.4.12 (2013-11-21)
 +++++++++++++++++++
 
