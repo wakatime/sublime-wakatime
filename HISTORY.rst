@@ -3,6 +3,12 @@ History
 -------
 
 
+1.5.1 (2013-12-02)
+++++++++++++++++++
+
+- decode file names with filesystem encoding, then encode as utf-8 for logging
+
+
 1.5.0 (2013-11-28)
 ++++++++++++++++++
 
