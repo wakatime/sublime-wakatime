@@ -3,6 +3,13 @@ History
 -------
 
 
+1.6.1 (2013-12-13)
+++++++++++++++++++
+
+- upgrade common wakatime package to v0.5.1
+- second line in .wakatime-project now sets branch name
+
+
 1.6.0 (2013-12-13)
 ++++++++++++++++++
 
