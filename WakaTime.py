@@ -59,10 +59,10 @@ def prompt_api_key():
                 sublime.save_settings(SETTINGS_FILE)
         window = sublime.active_window()
         if window:
-            window.show_input_panel('Enter your WakaTime api key:', '', got_key, None, None)
+            window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', '', got_key, None, None)
             return True
         else:
-            print('Error: Could not prompt for api key because no window found.')
+            print('[WakaTime] Error: Could not prompt for api key because no window found.')
     return False
 
 
@@ -119,7 +119,7 @@ class SendActionThread(threading.Thread):
 
     def send(self):
         if not self.api_key:
-            print('missing api key')
+            print('[WakaTime] Error: missing api key.')
             return
         ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
         cmd = [
@@ -140,7 +140,7 @@ class SendActionThread(threading.Thread):
                 print(cmd)
             code = wakatime.main(cmd)
             if code != 0:
-                print('Error: Response code %d from wakatime package' % code)
+                print('[WakaTime] Error: Response code %d from wakatime package.' % code)
         else:
             python = python_binary()
             if python:
@@ -153,7 +153,7 @@ class SendActionThread(threading.Thread):
                     with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
                         Popen(cmd, stderr=stderr)
             else:
-                print('Error: Unable to find python binary.')
+                print('[WakaTime] Error: Unable to find python binary.')
 
 
 def plugin_loaded():
