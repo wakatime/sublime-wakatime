@@ -3,7 +3,7 @@
 // This settings file will be overwritten when upgrading.
 
 {
-    // Your api key from https://www.wakatime.com/#apikey
+    // Your api key from https://wakatime.com/#apikey
     // Set this in your User specific WakaTime.sublime-settings file.
     "api_key": "",
     

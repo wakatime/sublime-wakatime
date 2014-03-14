@@ -3,7 +3,7 @@ File:        WakaTime.py
 Description: Automatic time tracking for Sublime Text 2 and 3.
 Maintainer:  WakaTime <support@wakatime.com>
 License:     BSD, see LICENSE for more details.
-Website:     https://www.wakatime.com/
+Website:     https://wakatime.com/
 ==========================================================="""
 
 __version__ = '1.6.5'
