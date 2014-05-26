@@ -3,6 +3,12 @@ History
 -------
 
 
+2.0.2 (2014-05-26)
+++++++++++++++++++
+
+- disable syncing offline time until bug fixed
+
+
 2.0.1 (2014-05-25)
 ++++++++++++++++++
 
