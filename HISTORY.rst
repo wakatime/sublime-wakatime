@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.3 (2014-05-26)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.0.1
+- fix bug in queue preventing completed tasks from being purged
+
+
 2.0.2 (2014-05-26)
 ++++++++++++++++++
 
