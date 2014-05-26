@@ -3,7 +3,7 @@ History
 -------
 
 
-2.0.0 (2014-05-25)
+2.0.1 (2014-05-25)
 ++++++++++++++++++
 
 - upgrade external wakatime package to v2.0.0
