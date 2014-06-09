@@ -13,9 +13,13 @@
 
 import logging
 import os
-import sqlite3
 import traceback
 from time import sleep
+try:
+    import sqlite3
+    HAS_SQL = True
+except ImportError:
+    HAS_SQL = False
 
 
 log = logging.getLogger(__name__)
@@ -41,6 +45,8 @@ class Queue(object):
 
 
     def push(self, data, plugin):
+        if not HAS_SQL:
+            return
         try:
             conn, c = self.connect()
             action = {
@@ -56,17 +62,19 @@ class Queue(object):
             c.execute('INSERT INTO action VALUES (:file,:time,:project,:language,:lines,:branch,:is_write,:plugin)', action)
             conn.commit()
             conn.close()
-        except sqlite3.Error, e:
-            log.error(str(e))
+        except sqlite3.Error:
+            log.error(traceback.format_exc())
 
 
     def pop(self):
+        if not HAS_SQL:
+            return None
         tries = 3
         wait = 0.1
         action = None
         try:
             conn, c = self.connect()
-        except sqlite3.Error, e:
+        except sqlite3.Error:
             log.debug(traceback.format_exc())
             return None
         loop = True
@@ -87,9 +95,9 @@ class Queue(object):
                             clauses.append('{0} IS NULL'.format(row_name))
                         index += 1
                     if len(values) > 0:
-                        c.execute('DELETE FROM action WHERE {0}'.format(u' AND '.join(clauses)), values)
+                        c.execute('DELETE FROM action WHERE {0}'.format(' AND '.join(clauses)), values)
                     else:
-                        c.execute('DELETE FROM action WHERE {0}'.format(u' AND '.join(clauses)))
+                        c.execute('DELETE FROM action WHERE {0}'.format(' AND '.join(clauses)))
                 conn.commit()
                 if row is not None:
                     action = {
@@ -103,12 +111,12 @@ class Queue(object):
                         'plugin': row[7],
                     }
                 loop = False
-            except sqlite3.Error, e:
+            except sqlite3.Error:
                 log.debug(traceback.format_exc())
                 sleep(wait)
                 tries -= 1
         try:
             conn.close()
-        except sqlite3.Error, e:
+        except sqlite3.Error:
             log.debug(traceback.format_exc())
         return action
