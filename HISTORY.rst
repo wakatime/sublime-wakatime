@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.4 (2014-06-09)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.0.2
+- disable offline logging when Python not compiled with sqlite3 module
+
+
 2.0.3 (2014-05-26)
 ++++++++++++++++++
 
