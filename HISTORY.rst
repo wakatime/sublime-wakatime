@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.5 (2014-06-18)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.0.3
+- use project name from sublime-project file when no revision control project found
+
+
 2.0.4 (2014-06-09)
 ++++++++++++++++++
 

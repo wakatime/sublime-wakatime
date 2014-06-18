@@ -6,7 +6,7 @@ License:     BSD, see LICENSE for more details.
 Website:     https://wakatime.com/
 ==========================================================="""
 
-__version__ = '2.0.4'
+__version__ = '2.0.5'
 
 import sublime
 import sublime_plugin
@@ -88,15 +88,23 @@ def enough_time_passed(now, last_time):
     return False
 
 
+def find_project_name_from_folders(folders):
+    for folder in folders:
+        for file_name in os.listdir(folder):
+            if file_name.endswith('.sublime-project'):
+                return file_name.replace('.sublime-project', '', 1)
+    return None
+
+
 def handle_action(view, is_write=False):
     global LOCK, LAST_ACTION
     with LOCK:
         target_file = view.file_name()
         if target_file:
-            project = view.window().project_file_name()
+            project = view.window().project_file_name() if hasattr(view.window(), 'project_file_name') else None
             if project:
                 project = basename(project).replace('.sublime-project', '', 1)
-            thread = SendActionThread(target_file, is_write=is_write, project=project)
+            thread = SendActionThread(target_file, is_write=is_write, project=project, folders=view.window().folders())
             thread.start()
             LAST_ACTION = {
                 'file': target_file,
@@ -107,11 +115,12 @@ def handle_action(view, is_write=False):
 
 class SendActionThread(threading.Thread):
 
-    def __init__(self, target_file, is_write=False, project=None, force=False):
+    def __init__(self, target_file, is_write=False, project=None, folders=None, force=False):
         threading.Thread.__init__(self)
         self.target_file = target_file
         self.is_write = is_write
         self.project = project
+        self.folders = folders
         self.force = force
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
@@ -140,6 +149,10 @@ class SendActionThread(threading.Thread):
             cmd.append('--write')
         if self.project:
             cmd.extend(['--project', self.project])
+        elif self.folders:
+            project_name = find_project_name_from_folders(self.folders)
+            if project_name:
+                cmd.extend(['--project', project_name])
         for pattern in self.ignore:
             cmd.extend(['--ignore', pattern])
         if self.debug:
