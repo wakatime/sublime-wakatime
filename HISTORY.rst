@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.9 (2014-08-27)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.0.7
+- fix support for subversion projects on Mac OS X
+
+
 2.0.8 (2014-08-07)
 ++++++++++++++++++
 
