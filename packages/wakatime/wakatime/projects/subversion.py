@@ -54,12 +54,13 @@ class Subversion(BaseProject):
             '/usr/local/bin/svn',
         ]
         for location in locations:
-            try:
-                Popen([location, '--version'])
-                self.binary_location = location
-                return location
-            except:
-                pass
+            with open(os.devnull, 'wb') as DEVNULL:
+                try:
+                    Popen([location, '--version'], stdout=DEVNULL, stderr=DEVNULL)
+                    self.binary_location = location
+                    return location
+                except:
+                    pass
         self.binary_location = 'svn'
         return 'svn'
 
