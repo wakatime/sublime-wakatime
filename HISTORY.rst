@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.13 (2014-10-07)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.1.2
+- still log heartbeat when something goes wrong while reading num lines in file
+
+
 2.0.12 (2014-09-30)
 ++++++++++++++++++
 
