@@ -181,6 +181,13 @@ class SendActionThread(threading.Thread):
 def plugin_loaded():
     global SETTINGS
     print('[WakaTime] Initializing WakaTime plugin v%s' % __version__)
+
+    if not HAS_SSL:
+        python = python_binary()
+        if not python:
+            sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
+            return
+
     SETTINGS = sublime.load_settings(SETTINGS_FILE)
     after_loaded()
 
