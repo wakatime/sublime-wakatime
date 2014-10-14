@@ -3,6 +3,12 @@ History
 -------
 
 
+2.0.14 (2014-10-14)
+++++++++++++++++++
+
+- popup error message if Python binary not found
+
+
 2.0.13 (2014-10-07)
 ++++++++++++++++++
 
