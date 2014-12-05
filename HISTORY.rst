@@ -3,6 +3,13 @@ History
 -------
 
 
+2.0.20 (2014-12-05)
+++++++++++++++++++
+
+- upgrade external wakatime package to v2.1.9
+- fix bug preventing offline heartbeats from being purged after uploaded
+
+
 2.0.19 (2014-12-04)
 ++++++++++++++++++
 
