@@ -3,6 +3,18 @@ History
 -------
 
 
+2.1.11 (2014-12-22)
++++++++++++++++++++
+
+- fix offline logging when response from api is None
+
+
+2.1.10 (2014-12-15)
++++++++++++++++++++
+
+- prevent queuing offline heartbeats which will never be valid (400 errors)
+
+
 2.1.9 (2014-12-05)
 ++++++++++++++++++
 
