@@ -3,6 +3,18 @@ History
 -------
 
 
+3.0.1 (2014-12-23)
+++++++++++++++++++
+
+- handle unknown language when parsing dependencies
+
+
+3.0.0 (2014-12-23)
+++++++++++++++++++
+
+- detect libraries and frameworks for C++, Java, .NET, PHP, and Python files
+
+
 2.1.11 (2014-12-22)
 +++++++++++++++++++
 
