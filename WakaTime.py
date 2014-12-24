@@ -20,7 +20,6 @@ import threading
 import uuid
 from os.path import expanduser, dirname, basename, realpath, isfile, join, exists
 
-
 # globals
 ACTION_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
@@ -36,6 +35,11 @@ LAST_ACTION = {
 HAS_SSL = False
 LOCK = threading.RLock()
 
+# add wakatime package to path
+sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+
+from wakatime import parseConfigFile
+
 # check if we have SSL support
 try:
     import ssl
@@ -46,13 +50,39 @@ except (ImportError, AttributeError):
     from subprocess import Popen
 
 if HAS_SSL:
-    # import wakatime package
-    sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
+    # import wakatime package so we can use built-in python
     import wakatime
+
+
+def createConfigFile():
+    """Creates the .wakatime.cfg INI file in $HOME directory, if it does
+    not already exist.
+    """
+    configFile = os.path.join(os.path.expanduser('~'), '.wakatime.cfg')
+    try:
+        with open(configFile, 'r', encoding='utf-8') as fh:
+            pass
+    except IOError:
+        try:
+            with open(configFile, 'w', encoding='utf-8') as fh:
+                fh.write("[settings]\n")
+                fh.write("debug = false\n")
+                fh.write("hidefilenames = false\n")
+        except IOError:
+            pass
 
 
 def prompt_api_key():
     global SETTINGS
+
+    createConfigFile()
+
+    default_key = ''
+    configs = parseConfigFile()
+    if configs is not None:
+        if configs.has_option('settings', 'api_key'):
+            default_key = configs.get('settings', 'api_key')
+
     if SETTINGS.get('api_key'):
         return True
     else:
@@ -62,7 +92,7 @@ def prompt_api_key():
                 sublime.save_settings(SETTINGS_FILE)
         window = sublime.active_window()
         if window:
-            window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', '', got_key, None, None)
+            window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', default_key, got_key, None, None)
             return True
         else:
             print('[WakaTime] Error: Could not prompt for api key because no window found.')
