@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.4 (2014-12-26)
+++++++++++++++++++
+
+- fix bug causing plugin to not work in Sublime Text 2
+
+
 3.0.3 (2014-12-25)
 ++++++++++++++++++
 
