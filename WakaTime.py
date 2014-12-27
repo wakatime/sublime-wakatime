@@ -60,11 +60,11 @@ def createConfigFile():
     """
     configFile = os.path.join(os.path.expanduser('~'), '.wakatime.cfg')
     try:
-        with open(configFile, 'r', encoding='utf-8') as fh:
+        with open(configFile) as fh:
             pass
     except IOError:
         try:
-            with open(configFile, 'w', encoding='utf-8') as fh:
+            with open(configFile, 'w') as fh:
                 fh.write("[settings]\n")
                 fh.write("debug = false\n")
                 fh.write("hidefilenames = false\n")
