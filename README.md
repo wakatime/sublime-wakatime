@@ -8,9 +8,9 @@ Installation
 
 Heads Up! For Sublime Text 2 on Windows & Linux, WakaTime depends on [Python](http://www.python.org/getit/) being installed to work correctly.
     
-1. Install [Sublime Package Control](https://packagecontrol.io/installation).
+1. Install [Package Control](https://packagecontrol.io/installation).
 
-2. Using [Sublime Package Control](https://packagecontrol.io/sublime_packages/package_control):
+2. Using [Package Control](https://packagecontrol.io/docs/usage):
 
   a) Inside Sublime, press `ctrl+shift+p`(Windows, Linux) or `cmd+shift+p`(OS X).
 
