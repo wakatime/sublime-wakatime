@@ -6,7 +6,7 @@ License:     BSD, see LICENSE for more details.
 Website:     https://wakatime.com/
 ==========================================================="""
 
-__version__ = '3.0.5'
+__version__ = '3.0.6'
 
 import sublime
 import sublime_plugin
