@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.7 (2015-02-05)
+++++++++++++++++++
+
+- handle errors encountered when looking for .sublime-project file
+
+
 3.0.6 (2015-01-13)
 ++++++++++++++++++
 
