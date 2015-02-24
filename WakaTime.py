@@ -17,8 +17,8 @@ import platform
 import sys
 import time
 import threading
-import uuid
-from os.path import expanduser, dirname, basename, realpath, isfile, join, exists
+import webbrowser
+from os.path import expanduser, dirname, basename, realpath, join, exists
 
 # globals
 ACTION_FREQUENCY = 2
@@ -44,7 +44,8 @@ from wakatime import parseConfigFile
 try:
     import ssl
     import socket
-    socket.ssl
+    assert ssl
+    assert socket.ssl
     HAS_SSL = True
 except (ImportError, AttributeError):
     from subprocess import Popen
@@ -246,10 +247,8 @@ class WakatimeListener(sublime_plugin.EventListener):
     def on_modified(self, view):
         handle_action(view)
 
-import webbrowser
 
 class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
+
     def run(self):
         webbrowser.open_new_tab('https://wakatime.com/dashboard')
-
-
