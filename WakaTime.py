@@ -245,3 +245,11 @@ class WakatimeListener(sublime_plugin.EventListener):
 
     def on_modified(self, view):
         handle_action(view)
+
+import webbrowser
+
+class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
+    def run(self):
+        webbrowser.open_new_tab('https://wakatime.com/dashboard')
+
+
