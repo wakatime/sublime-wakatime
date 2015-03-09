@@ -18,7 +18,7 @@ import sys
 import time
 import threading
 import webbrowser
-from os.path import expanduser, dirname, basename, realpath, join, exists
+from os.path import expanduser, dirname, basename, realpath, join
 
 # globals
 ACTION_FREQUENCY = 2
@@ -34,6 +34,7 @@ LAST_ACTION = {
 }
 HAS_SSL = False
 LOCK = threading.RLock()
+PYTHON_LOCATION = None
 
 # add wakatime package to path
 sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
@@ -101,16 +102,31 @@ def prompt_api_key():
 
 
 def python_binary():
-    if platform.system() == 'Windows':
+    global PYTHON_LOCATION
+    if PYTHON_LOCATION is not None:
+        return PYTHON_LOCATION
+    paths = [
+        "pythonw",
+        "python",
+        "/usr/local/bin/python",
+        "/usr/bin/python",
+    ]
+    for path in paths:
         try:
-            Popen(['pythonw', '--version'])
-            return 'pythonw'
+            Popen([path, '--version'])
+            PYTHON_LOCATION = path
+            return path
         except:
-            for path in glob.iglob('/python*'):
-                if exists(realpath(join(path, 'pythonw.exe'))):
-                    return realpath(join(path, 'pythonw'))
-            return None
-    return 'python'
+            pass
+    for path in glob.iglob('/python*'):
+        path = realpath(join(path, 'pythonw'))
+        try:
+            Popen([path, '--version'])
+            PYTHON_LOCATION = path
+            return path
+        except:
+            pass
+    return None
 
 
 def enough_time_passed(now, last_time):
