@@ -24,7 +24,7 @@ from os.path import expanduser, dirname, basename, realpath, join
 ACTION_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
 PLUGIN_DIR = dirname(realpath(__file__))
-API_CLIENT = '%s/packages/wakatime/wakatime-cli.py' % PLUGIN_DIR
+API_CLIENT = '%s/packages/wakatime/cli.py' % PLUGIN_DIR
 SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
 LAST_ACTION = {
@@ -37,9 +37,7 @@ LOCK = threading.RLock()
 PYTHON_LOCATION = None
 
 # add wakatime package to path
-sys.path.insert(0, join(PLUGIN_DIR, 'packages', 'wakatime'))
-
-from wakatime import parseConfigFile
+sys.path.insert(0, join(PLUGIN_DIR, 'packages'))
 
 # check if we have SSL support
 try:
@@ -80,10 +78,14 @@ def prompt_api_key():
     createConfigFile()
 
     default_key = ''
-    configs = parseConfigFile()
-    if configs is not None:
-        if configs.has_option('settings', 'api_key'):
-            default_key = configs.get('settings', 'api_key')
+    try:
+        from wakatime.base import parseConfigFile
+        configs = parseConfigFile()
+        if configs is not None:
+            if configs.has_option('settings', 'api_key'):
+                default_key = configs.get('settings', 'api_key')
+    except:
+        pass
 
     if SETTINGS.get('api_key'):
         return True
@@ -208,8 +210,8 @@ class SendActionThread(threading.Thread):
         if self.debug:
             cmd.append('--verbose')
         if HAS_SSL:
-            if self.debug:
-                print('[WakaTime] %s' % ' '.join(cmd))
+            #if self.debug:
+            print('[WakaTime] %s' % ' '.join(cmd))
             code = wakatime.main(cmd)
             if code != 0:
                 print('[WakaTime] Error: Response code %d from wakatime package.' % code)
@@ -217,8 +219,8 @@ class SendActionThread(threading.Thread):
             python = python_binary()
             if python:
                 cmd.insert(0, python)
-                if self.debug:
-                    print('[WakaTime] %s' % ' '.join(cmd))
+                #if self.debug:
+                print('[WakaTime] %s %s' % (python, ' '.join(cmd)))
                 if platform.system() == 'Windows':
                     Popen(cmd, shell=False)
                 else:
