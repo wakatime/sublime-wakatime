@@ -6,7 +6,7 @@ License:     BSD, see LICENSE for more details.
 Website:     https://wakatime.com/
 ==========================================================="""
 
-__version__ = '3.0.7'
+__version__ = '3.0.8'
 
 import sublime
 import sublime_plugin
@@ -210,8 +210,8 @@ class SendActionThread(threading.Thread):
         if self.debug:
             cmd.append('--verbose')
         if HAS_SSL:
-            #if self.debug:
-            print('[WakaTime] %s' % ' '.join(cmd))
+            if self.debug:
+                print('[WakaTime] %s' % ' '.join(cmd))
             code = wakatime.main(cmd)
             if code != 0:
                 print('[WakaTime] Error: Response code %d from wakatime package.' % code)
@@ -219,8 +219,8 @@ class SendActionThread(threading.Thread):
             python = python_binary()
             if python:
                 cmd.insert(0, python)
-                #if self.debug:
-                print('[WakaTime] %s %s' % (python, ' '.join(cmd)))
+                if self.debug:
+                    print('[WakaTime] %s %s' % (python, ' '.join(cmd)))
                 if platform.system() == 'Windows':
                     Popen(cmd, shell=False)
                 else:

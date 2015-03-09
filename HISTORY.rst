@@ -3,6 +3,16 @@ History
 -------
 
 
+3.0.8 (2015-03-09)
+++++++++++++++++++
+
+- upgrade wakatime cli to v4.0.4
+- use requests library instead of urllib2, so api SSL cert is verified
+- new --notfile argument to support logging time without a real file
+- new --proxy argument for https proxy support
+- new options for excluding and including directories
+
+
 3.0.7 (2015-02-05)
 ++++++++++++++++++
 
