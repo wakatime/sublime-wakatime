@@ -18,6 +18,7 @@ import sys
 import time
 import threading
 import webbrowser
+from datetime import datetime
 from os.path import expanduser, dirname, basename, realpath, join
 
 # globals
@@ -149,26 +150,17 @@ def find_project_name_from_folders(folders):
 
 
 def handle_action(view, is_write=False):
-    global LOCK, LAST_ACTION
-    with LOCK:
-        target_file = view.file_name()
-        if target_file:
-            project = view.window().project_file_name() if hasattr(view.window(), 'project_file_name') else None
-            if project:
-                project = basename(project).replace('.sublime-project', '', 1)
-            thread = SendActionThread(target_file, is_write=is_write, project=project, folders=view.window().folders())
-            thread.start()
-            LAST_ACTION = {
-                'file': target_file,
-                'time': time.time(),
-                'is_write': is_write,
-            }
+    target_file = view.file_name()
+    project = view.window().project_file_name() if hasattr(view.window(), 'project_file_name') else None
+    thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=view.window().folders())
+    thread.start()
 
 
 class SendActionThread(threading.Thread):
 
-    def __init__(self, target_file, is_write=False, project=None, folders=None, force=False):
+    def __init__(self, target_file, view, is_write=False, project=None, folders=None, force=False):
         threading.Thread.__init__(self)
+        self.lock = LOCK
         self.target_file = target_file
         self.is_write = is_write
         self.project = project
@@ -177,15 +169,17 @@ class SendActionThread(threading.Thread):
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
-        self.last_action = LAST_ACTION
+        self.last_action = LAST_ACTION.copy()
+        self.view = view
 
     def run(self):
-        if self.target_file:
-            self.timestamp = time.time()
-            if self.force or (self.is_write and not self.last_action['is_write']) or self.target_file != self.last_action['file'] or enough_time_passed(self.timestamp, self.last_action['time']):
-                self.send()
+        with self.lock:
+            if self.target_file:
+                self.timestamp = time.time()
+                if self.force or (self.is_write and not self.last_action['is_write']) or self.target_file != self.last_action['file'] or enough_time_passed(self.timestamp, self.last_action['time']):
+                    self.send_heartbeat()
 
-    def send(self):
+    def send_heartbeat(self):
         if not self.api_key:
             print('[WakaTime] Error: missing api key.')
             return
@@ -199,6 +193,8 @@ class SendActionThread(threading.Thread):
         ]
         if self.is_write:
             cmd.append('--write')
+        if self.project:
+            self.project = basename(self.project).replace('.sublime-project', '', 1)
         if self.project:
             cmd.extend(['--project', self.project])
         elif self.folders:
@@ -215,6 +211,8 @@ class SendActionThread(threading.Thread):
             code = wakatime.main(cmd)
             if code != 0:
                 print('[WakaTime] Error: Response code %d from wakatime package.' % code)
+            else:
+                self.sent()
         else:
             python = python_binary()
             if python:
@@ -226,8 +224,21 @@ class SendActionThread(threading.Thread):
                 else:
                     with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
                         Popen(cmd, stderr=stderr)
+                self.sent()
             else:
                 print('[WakaTime] Error: Unable to find python binary.')
+
+    def sent(self):
+        sublime.set_timeout(lambda: self.view.set_status('wakatime', 'WakaTime heartbeat sent {0}'.format(datetime.now().strftime('%A %b %d %Y at %I:%M %p %Z'))), 0)
+        sublime.set_timeout(self.set_last_action, 0)
+
+    def set_last_action(self):
+        global LAST_ACTION
+        LAST_ACTION = {
+            'file': self.target_file,
+            'time': self.timestamp,
+            'is_write': self.is_write,
+        }
 
 
 def plugin_loaded():
