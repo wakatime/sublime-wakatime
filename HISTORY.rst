@@ -3,6 +3,13 @@ History
 -------
 
 
+3.0.9 (2015-03-20)
+++++++++++++++++++
+
+- status bar message showing when WakaTime plugin is enabled
+- moved some logic into thread to help prevent slow plugin warning message
+
+
 3.0.8 (2015-03-09)
 ++++++++++++++++++
 
