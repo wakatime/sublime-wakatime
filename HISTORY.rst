@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.10 (2015-03-22)
++++++++++++++++++++
+
+- ability to disable status bar message from WakaTime.sublime-settings file
+
+
 3.0.9 (2015-03-20)
 ++++++++++++++++++
 
