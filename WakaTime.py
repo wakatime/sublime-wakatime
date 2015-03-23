@@ -229,7 +229,8 @@ class SendActionThread(threading.Thread):
                 print('[WakaTime] Error: Unable to find python binary.')
 
     def sent(self):
-        sublime.set_timeout(lambda: self.view.set_status('wakatime', 'WakaTime heartbeat sent {0}'.format(datetime.now().strftime('%A %b %d %Y at %I:%M %p %Z'))), 0)
+        if SETTINGS.get('status_bar_message'):
+            sublime.set_timeout(lambda: self.view.set_status('wakatime', 'WakaTime active {0}'.format(datetime.now().strftime('%I:%M %p'))), 0)
         sublime.set_timeout(self.set_last_action, 0)
 
     def set_last_action(self):
