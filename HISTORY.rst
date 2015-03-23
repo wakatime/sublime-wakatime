@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.12 (2015-03-23)
++++++++++++++++++++
+
+- always use unicode function from compat module when encoding log messages
+
+
 3.0.11 (2015-03-23)
 +++++++++++++++++++
 
