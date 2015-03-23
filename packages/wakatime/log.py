@@ -24,9 +24,6 @@ except ImportError:
 class CustomEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        if isinstance(obj, bytes):
-            obj = bytes.decode(obj)
-            return json.dumps(obj)
         try:
             encoded = super(CustomEncoder, self).default(obj)
         except UnicodeDecodeError:
