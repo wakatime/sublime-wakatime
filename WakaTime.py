@@ -6,7 +6,7 @@ License:     BSD, see LICENSE for more details.
 Website:     https://wakatime.com/
 ==========================================================="""
 
-__version__ = '3.0.12'
+__version__ = '3.0.13'
 
 import sublime
 import sublime_plugin
@@ -230,9 +230,12 @@ class SendActionThread(threading.Thread):
                 print('[WakaTime] Error: Unable to find python binary.')
 
     def sent(self):
-        if SETTINGS.get('status_bar_message'):
-            sublime.set_timeout(lambda: self.view.set_status('wakatime', 'WakaTime active {0}'.format(datetime.now().strftime('%I:%M %p'))), 0)
+        sublime.set_timeout(self.set_status_bar, 0)
         sublime.set_timeout(self.set_last_action, 0)
+
+    def set_status_bar(self):
+        if SETTINGS.get('status_bar_message'):
+            self.view.set_status('wakatime', 'WakaTime active {0}'.format(datetime.now().strftime('%I:%M %p')))
 
     def set_last_action(self):
         global LAST_ACTION

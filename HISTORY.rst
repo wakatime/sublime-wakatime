@@ -3,6 +3,13 @@ History
 -------
 
 
+3.0.13 (2015-03-23)
++++++++++++++++++++
+
+- correctly check for SSL support in ST built-in python
+- fix status bar message
+
+
 3.0.12 (2015-03-23)
 +++++++++++++++++++
 
