@@ -46,6 +46,7 @@ try:
     import socket
     assert ssl
     assert socket.ssl
+    assert ssl.OPENSSL_VERSION
     HAS_SSL = True
 except (ImportError, AttributeError):
     from subprocess import Popen
