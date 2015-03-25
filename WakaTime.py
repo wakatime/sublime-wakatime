@@ -153,7 +153,8 @@ def find_project_name_from_folders(folders):
 def handle_action(view, is_write=False):
     target_file = view.file_name()
     project = view.window().project_file_name() if hasattr(view.window(), 'project_file_name') else None
-    thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=view.window().folders())
+    folders = view.window().folders() if hasattr(view.window(), 'folders') else sublime.active_window().folders() if hasattr(sublime.active_window(), 'folders') else None
+    thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=folders)
     thread.start()
 
 
