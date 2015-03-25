@@ -151,10 +151,13 @@ def find_project_name_from_folders(folders):
 
 
 def handle_action(view, is_write=False):
-    target_file = view.file_name()
-    project = view.window().project_file_name() if hasattr(view.window(), 'project_file_name') else None
-    thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=view.window().folders())
-    thread.start()
+    window = view.window()
+    if window is not None:
+        target_file = view.file_name()
+        project = window.project_file_name() if hasattr(window, 'project_file_name') else None
+        folders = window.folders()
+        thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=folders)
+        thread.start()
 
 
 class SendActionThread(threading.Thread):
