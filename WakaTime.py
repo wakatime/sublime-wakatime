@@ -6,7 +6,9 @@ License:     BSD, see LICENSE for more details.
 Website:     https://wakatime.com/
 ==========================================================="""
 
+
 __version__ = '3.0.13'
+
 
 import sublime
 import sublime_plugin
@@ -19,13 +21,14 @@ import time
 import threading
 import webbrowser
 from datetime import datetime
-from os.path import expanduser, dirname, basename, realpath, join
+from subprocess import Popen
+
 
 # globals
 ACTION_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
-PLUGIN_DIR = dirname(realpath(__file__))
-API_CLIENT = '%s/packages/wakatime/cli.py' % PLUGIN_DIR
+PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
+API_CLIENT = os.path.join(PLUGIN_DIR, 'packages', 'wakatime', 'cli.py')
 SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
 LAST_ACTION = {
@@ -33,27 +36,16 @@ LAST_ACTION = {
     'file': None,
     'is_write': False,
 }
-HAS_SSL = False
 LOCK = threading.RLock()
 PYTHON_LOCATION = None
 
+
 # add wakatime package to path
-sys.path.insert(0, join(PLUGIN_DIR, 'packages'))
-
-# check if we have SSL support
+sys.path.insert(0, os.path.join(PLUGIN_DIR, 'packages'))
 try:
-    import ssl
-    import socket
-    assert ssl
-    assert socket.ssl
-    assert ssl.OPENSSL_VERSION
-    HAS_SSL = True
-except (ImportError, AttributeError):
-    from subprocess import Popen
-
-if HAS_SSL:
-    # import wakatime package so we can use built-in python
-    import wakatime
+    from wakatime.base import parseConfigFile
+except ImportError:
+    pass
 
 
 def createConfigFile():
@@ -81,7 +73,6 @@ def prompt_api_key():
 
     default_key = ''
     try:
-        from wakatime.base import parseConfigFile
         configs = parseConfigFile()
         if configs is not None:
             if configs.has_option('settings', 'api_key'):
@@ -123,7 +114,7 @@ def python_binary():
         except:
             pass
     for path in glob.iglob('/python*'):
-        path = realpath(join(path, 'pythonw'))
+        path = os.path.realpath(os.path.join(path, 'pythonw'))
         try:
             Popen([path, '--version'])
             PYTHON_LOCATION = path
@@ -198,7 +189,7 @@ class SendActionThread(threading.Thread):
         if self.is_write:
             cmd.append('--write')
         if self.project:
-            self.project = basename(self.project).replace('.sublime-project', '', 1)
+            self.project = os.path.basename(self.project).replace('.sublime-project', '', 1)
         if self.project:
             cmd.extend(['--project', self.project])
         elif self.folders:
@@ -209,28 +200,18 @@ class SendActionThread(threading.Thread):
             cmd.extend(['--ignore', pattern])
         if self.debug:
             cmd.append('--verbose')
-        if HAS_SSL:
+        if python_binary():
+            cmd.insert(0, python_binary())
             if self.debug:
                 print('[WakaTime] %s' % ' '.join(cmd))
-            code = wakatime.main(cmd)
-            if code != 0:
-                print('[WakaTime] Error: Response code %d from wakatime package.' % code)
+            if platform.system() == 'Windows':
+                Popen(cmd, shell=False)
             else:
-                self.sent()
+                with open(os.path.join(os.path.expanduser('~'), '.wakatime.log'), 'a') as stderr:
+                    Popen(cmd, stderr=stderr)
+            self.sent()
         else:
-            python = python_binary()
-            if python:
-                cmd.insert(0, python)
-                if self.debug:
-                    print('[WakaTime] %s %s' % (python, ' '.join(cmd)))
-                if platform.system() == 'Windows':
-                    Popen(cmd, shell=False)
-                else:
-                    with open(join(expanduser('~'), '.wakatime.log'), 'a') as stderr:
-                        Popen(cmd, stderr=stderr)
-                self.sent()
-            else:
-                print('[WakaTime] Error: Unable to find python binary.')
+            print('[WakaTime] Error: Unable to find python binary.')
 
     def sent(self):
         sublime.set_timeout(self.set_status_bar, 0)
@@ -253,11 +234,9 @@ def plugin_loaded():
     global SETTINGS
     print('[WakaTime] Initializing WakaTime plugin v%s' % __version__)
 
-    if not HAS_SSL:
-        python = python_binary()
-        if not python:
-            sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
-            return
+    if not python_binary():
+        sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
+        return
 
     SETTINGS = sublime.load_settings(SETTINGS_FILE)
     after_loaded()
