@@ -3,6 +3,13 @@ History
 -------
 
 
+3.0.14 (2015-03-31)
++++++++++++++++++++
+
+- always use external python binary because ST builtin python does not support checking SSL certs
+- upgrade wakatime cli to v4.0.6
+
+
 3.0.13 (2015-03-23)
 +++++++++++++++++++
 
