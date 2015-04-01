@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.15 (2015-04-01)
++++++++++++++++++++
+
+- obfuscate api key when logging to Sublime Text Console in debug mode
+
+
 3.0.14 (2015-03-31)
 +++++++++++++++++++
 
