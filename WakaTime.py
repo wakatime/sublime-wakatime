@@ -124,6 +124,17 @@ def python_binary():
     return None
 
 
+def obfuscate_apikey(cmd):
+    apikey_index = None
+    for num in range(len(cmd)):
+        if cmd[num] == '--key':
+            apikey_index = num + 1
+            break
+    if apikey_index is not None and apikey_index < len(cmd):
+        cmd[apikey_index] = '********-****-****-****-********' + cmd[apikey_index][-4:]
+    return cmd
+
+
 def enough_time_passed(now, last_time):
     if now - last_time > ACTION_FREQUENCY * 60:
         return True
@@ -203,7 +214,7 @@ class SendActionThread(threading.Thread):
         if python_binary():
             cmd.insert(0, python_binary())
             if self.debug:
-                print('[WakaTime] %s' % ' '.join(cmd))
+                print('[WakaTime] %s' % ' '.join(obfuscate_apikey(cmd)))
             if platform.system() == 'Windows':
                 Popen(cmd, shell=False)
             else:
