@@ -124,7 +124,8 @@ def python_binary():
     return None
 
 
-def obfuscate_apikey(cmd):
+def obfuscate_apikey(command_list):
+    cmd = list(command_list)
     apikey_index = None
     for num in range(len(cmd)):
         if cmd[num] == '--key':
