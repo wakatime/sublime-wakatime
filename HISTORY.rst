@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.16 (2015-04-02)
++++++++++++++++++++
+
+- copy list when obfuscating api key so original command is not modified
+
+
 3.0.15 (2015-04-01)
 +++++++++++++++++++
 
