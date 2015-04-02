@@ -142,22 +142,40 @@ def enough_time_passed(now, last_time):
     return False
 
 
-def find_project_name_from_folders(folders):
-    try:
+def find_folder_containing_file(folders, current_file):
+    """Returns absolute path to folder containing the file.
+    """
+
+    parent_folder = None
+
+    current_folder = current_file
+    while True:
         for folder in folders:
-            for file_name in os.listdir(folder):
-                if file_name.endswith('.sublime-project'):
-                    return file_name.replace('.sublime-project', '', 1)
-    except:
-        pass
-    return None
+            if os.path.realpath(os.path.dirname(current_folder)) == os.path.realpath(folder):
+                parent_folder = folder
+                break
+        if parent_folder is not None:
+            break
+        if not current_folder or os.path.dirname(current_folder) == current_folder:
+            break
+        current_folder = os.path.dirname(current_folder)
+
+    return parent_folder
+
+
+def find_project_from_folders(folders, current_file):
+    """Find project name from open folders.
+    """
+
+    folder = find_folder_containing_file(folders, current_file)
+    return os.path.basename(folder)
 
 
 def handle_action(view, is_write=False):
     window = view.window()
     if window is not None:
         target_file = view.file_name()
-        project = window.project_file_name() if hasattr(window, 'project_file_name') else None
+        project = window.project_data() if hasattr(window, 'project_data') else None
         folders = window.folders()
         thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=folders)
         thread.start()
@@ -200,12 +218,10 @@ class SendActionThread(threading.Thread):
         ]
         if self.is_write:
             cmd.append('--write')
-        if self.project:
-            self.project = os.path.basename(self.project).replace('.sublime-project', '', 1)
-        if self.project:
-            cmd.extend(['--project', self.project])
+        if self.project and self.project.get('name'):
+            cmd.extend(['--project', self.project.get('name')])
         elif self.folders:
-            project_name = find_project_name_from_folders(self.folders)
+            project_name = find_project_from_folders(self.folders, self.target_file)
             if project_name:
                 cmd.extend(['--project', project_name])
         for pattern in self.ignore:
