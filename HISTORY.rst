@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.17 (2015-04-02)
++++++++++++++++++++
+
+- use open folder as current project when not using revision control
+
+
 3.0.16 (2015-04-02)
 +++++++++++++++++++
 
