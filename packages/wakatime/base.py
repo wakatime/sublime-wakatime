@@ -134,6 +134,8 @@ def parseArguments(argv):
     parser.add_argument('--file', dest='targetFile', metavar='file',
             action=FileAction, required=True,
             help='absolute path to file for current heartbeat')
+    parser.add_argument('--url', dest='url',
+            help='the server api url (default to wakatime\'s)')
     parser.add_argument('--key', dest='key',
             help='your wakatime api key; uses api_key from '+
                 '~/.wakatime.conf by default')
@@ -229,6 +231,8 @@ def parseArguments(argv):
             pass
     if args.offline and configs.has_option('settings', 'offline'):
         args.offline = configs.getboolean('settings', 'offline')
+    if not args.url and configs.has_option('settings', 'url'):
+        args.url = configs.get('settings', 'url')
     if not args.hidefilenames and configs.has_option('settings', 'hidefilenames'):
         args.hidefilenames = configs.getboolean('settings', 'hidefilenames')
     if not args.proxy and configs.has_option('settings', 'proxy'):
@@ -294,10 +298,9 @@ def get_user_agent(plugin):
     return user_agent
 
 
-def send_heartbeat(project=None, branch=None, stats={}, key=None, targetFile=None,
+def send_heartbeat(project=None, branch=None, stats={}, url=None, key=None, targetFile=None,
         timestamp=None, isWrite=None, plugin=None, offline=None,
         hidefilenames=None, notfile=False, proxy=None, **kwargs):
-    url = 'https://wakatime.com/api/v1/heartbeats'
     log.debug('Sending heartbeat to api at %s' % url)
     data = {
         'time': timestamp,
@@ -444,6 +447,7 @@ def main(argv=None):
                                    timestamp=heartbeat['time'],
                                    branch=heartbeat['branch'],
                                    stats=json.loads(heartbeat['stats']),
+                                   url=args.url,
                                    key=args.key,
                                    isWrite=heartbeat['is_write'],
                                    plugin=heartbeat['plugin'],

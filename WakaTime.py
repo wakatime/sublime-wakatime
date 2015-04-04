@@ -62,6 +62,7 @@ def createConfigFile():
                 fh.write("[settings]\n")
                 fh.write("debug = false\n")
                 fh.write("hidefilenames = false\n")
+                fh.write("url = https://wakatime.com/api/v1/heartbeats\n")
         except IOError:
             pass
 
