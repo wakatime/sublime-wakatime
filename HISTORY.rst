@@ -3,6 +3,13 @@ History
 -------
 
 
+3.0.18 (2015-04-04)
++++++++++++++++++++
+
+- upgrade wakatime cli to v4.0.8
+- added api_url config option to .wakatime.cfg file
+
+
 3.0.17 (2015-04-02)
 +++++++++++++++++++
 
