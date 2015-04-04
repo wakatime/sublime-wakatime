@@ -26,12 +26,11 @@ except ImportError:
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'packages'))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'packages', 'requests', 'packages'))
 
 from .__about__ import __version__
 from .compat import u, open, is_py3
 from .offlinequeue import Queue
-from .log import setup_logging
+from .logger import setup_logging
 from .project import find_project
 from .stats import get_file_stats
 from .packages import argparse
@@ -155,7 +154,7 @@ def parseArguments(argv):
                         help='optional https proxy url; for example: '+
                         'https://user:pass@localhost:8080')
     parser.add_argument('--project', dest='project_name',
-            help='optional project name; will auto-discover by default')
+            help='optional project name; auto-discovered project takes priority')
     parser.add_argument('--disableoffline', dest='offline',
             action='store_false',
             help='disables offline time logging instead of queuing logged time')
@@ -173,6 +172,8 @@ def parseArguments(argv):
             help=argparse.SUPPRESS)
     parser.add_argument('--logfile', dest='logfile',
             help='defaults to ~/.wakatime.log')
+    parser.add_argument('--apiurl', dest='api_url',
+            help='heartbeats api url; for debugging with a local server')
     parser.add_argument('--config', dest='config',
             help='defaults to ~/.wakatime.conf')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
@@ -239,6 +240,8 @@ def parseArguments(argv):
         args.verbose = configs.getboolean('settings', 'debug')
     if not args.logfile and configs.has_option('settings', 'logfile'):
         args.logfile = configs.get('settings', 'logfile')
+    if not args.api_url and configs.has_option('settings', 'api_url'):
+        args.api_url = configs.get('settings', 'api_url')
 
     return args, configs
 
@@ -295,10 +298,14 @@ def get_user_agent(plugin):
 
 
 def send_heartbeat(project=None, branch=None, stats={}, key=None, targetFile=None,
-        timestamp=None, isWrite=None, plugin=None, offline=None,
-        hidefilenames=None, notfile=False, proxy=None, **kwargs):
-    url = 'https://wakatime.com/api/v1/heartbeats'
-    log.debug('Sending heartbeat to api at %s' % url)
+        timestamp=None, isWrite=None, plugin=None, offline=None, notfile=False,
+        hidefilenames=None, proxy=None, api_url=None, **kwargs):
+    """Sends heartbeat as POST request to WakaTime api server.
+    """
+
+    if not api_url:
+        api_url = 'https://wakatime.com/api/v1/heartbeats'
+    log.debug('Sending heartbeat to api at %s' % api_url)
     data = {
         'time': timestamp,
         'file': targetFile,
@@ -348,7 +355,7 @@ def send_heartbeat(project=None, branch=None, stats={}, key=None, targetFile=Non
     # log time to api
     response = None
     try:
-        response = requests.post(url, data=request_body, headers=headers,
+        response = requests.post(api_url, data=request_body, headers=headers,
                                  proxies=proxies)
     except RequestException:
         exception_data = {
@@ -439,18 +446,21 @@ def main(argv=None):
                 heartbeat = queue.pop()
                 if heartbeat is None:
                     break
-                sent = send_heartbeat(project=heartbeat['project'],
-                                   targetFile=heartbeat['file'],
-                                   timestamp=heartbeat['time'],
-                                   branch=heartbeat['branch'],
-                                   stats=json.loads(heartbeat['stats']),
-                                   key=args.key,
-                                   isWrite=heartbeat['is_write'],
-                                   plugin=heartbeat['plugin'],
-                                   offline=args.offline,
-                                   hidefilenames=args.hidefilenames,
-                                   notfile=args.notfile,
-                                   proxy=args.proxy)
+                sent = send_heartbeat(
+                    project=heartbeat['project'],
+                    targetFile=heartbeat['file'],
+                    timestamp=heartbeat['time'],
+                    branch=heartbeat['branch'],
+                    stats=json.loads(heartbeat['stats']),
+                    key=args.key,
+                    isWrite=heartbeat['is_write'],
+                    plugin=heartbeat['plugin'],
+                    offline=args.offline,
+                    hidefilenames=args.hidefilenames,
+                    notfile=args.notfile,
+                    proxy=args.proxy,
+                    api_url=args.api_url,
+                )
                 if not sent:
                     break
             return 0 # success
