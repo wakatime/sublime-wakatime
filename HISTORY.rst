@@ -3,6 +3,12 @@ History
 -------
 
 
+3.0.19 (2015-04-07)
++++++++++++++++++++
+
+- fix bug in project detection when folder not found
+
+
 3.0.18 (2015-04-04)
 +++++++++++++++++++
 
