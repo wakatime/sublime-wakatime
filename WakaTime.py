@@ -168,7 +168,7 @@ def find_project_from_folders(folders, current_file):
     """
 
     folder = find_folder_containing_file(folders, current_file)
-    return os.path.basename(folder)
+    return os.path.basename(folder) if folder else None
 
 
 def handle_action(view, is_write=False):
