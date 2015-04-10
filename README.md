@@ -18,7 +18,7 @@ Heads Up! For Sublime Text 2 on Windows & Linux, WakaTime depends on [Python](ht
 
   c) Type `wakatime`, then press `enter` with the `WakaTime` plugin selected.
 
-3. Enter your [api key](https://wakatime.com/settings#apikey) from https://wakatime.com/settings#apikey, then press `enter`.
+3. Enter your [api key](https://wakatime.com/settings#apikey), then press `enter`.
 
 4. Use Sublime and your time will be tracked for you automatically.
 
