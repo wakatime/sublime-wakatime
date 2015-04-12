@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.0 (2015-04-12)
+++++++++++++++++++
+
+- listen for selection modified instead of buffer activated for better performance
+
+
 3.0.19 (2015-04-07)
 +++++++++++++++++++
 
