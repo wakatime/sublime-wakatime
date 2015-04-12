@@ -285,7 +285,7 @@ class WakatimeListener(sublime_plugin.EventListener):
     def on_post_save(self, view):
         handle_action(view, is_write=True)
 
-    def on_activated(self, view):
+    def on_selection_modified(self, view):
         handle_action(view)
 
     def on_modified(self, view):
