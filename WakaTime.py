@@ -207,7 +207,7 @@ class SendHeartbeatThread(threading.Thread):
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
         self.last_heartbeat = LAST_HEARTBEAT.copy()
-        self.lineno = view.sel()[0].begin() if view.sel() else None
+        self.cursorpos = view.sel()[0].begin() if view.sel() else None
         self.view = view
 
     def run(self):
@@ -237,8 +237,8 @@ class SendHeartbeatThread(threading.Thread):
             project_name = find_project_from_folders(self.folders, self.target_file)
             if project_name:
                 cmd.extend(['--project', project_name])
-        if self.lineno is not None:
-            cmd.extend(['--lineno', self.lineno])
+        if self.cursorpos is not None:
+            cmd.extend(['--cursorpos', '{0}'.format(self.cursorpos)])
         for pattern in self.ignore:
             cmd.extend(['--ignore', pattern])
         if self.debug:
