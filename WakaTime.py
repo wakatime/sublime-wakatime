@@ -173,6 +173,16 @@ def find_project_from_folders(folders, current_file):
     return os.path.basename(folder) if folder else None
 
 
+def is_view_active(view):
+    if view:
+        active_window = sublime.active_window()
+        if active_window:
+            active_view = active_window.active_view()
+            if active_view:
+                return active_view.buffer_id() == view.buffer_id()
+    return False
+
+
 def handle_heartbeat(view, is_write=False):
     window = view.window()
     if window is not None:
@@ -288,11 +298,11 @@ class WakatimeListener(sublime_plugin.EventListener):
         handle_heartbeat(view, is_write=True)
 
     def on_selection_modified(self, view):
-        if sublime.active_window().active_view().buffer_id() == view.buffer_id():
+        if is_view_active(view):
             handle_heartbeat(view)
 
     def on_modified(self, view):
-        if sublime.active_window().active_view().buffer_id() == view.buffer_id():
+        if is_view_active(view):
             handle_heartbeat(view)
 
 
