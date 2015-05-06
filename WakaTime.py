@@ -288,10 +288,12 @@ class WakatimeListener(sublime_plugin.EventListener):
         handle_heartbeat(view, is_write=True)
 
     def on_selection_modified(self, view):
-        handle_heartbeat(view)
+        if sublime.active_window().active_view().buffer_id() == view.buffer_id():
+            handle_heartbeat(view)
 
     def on_modified(self, view):
-        handle_heartbeat(view)
+        if sublime.active_window().active_view().buffer_id() == view.buffer_id():
+            handle_heartbeat(view)
 
 
 class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
