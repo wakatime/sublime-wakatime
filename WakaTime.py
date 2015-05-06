@@ -25,13 +25,13 @@ from subprocess import Popen
 
 
 # globals
-ACTION_FREQUENCY = 2
+HEARTBEAT_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
 PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
 API_CLIENT = os.path.join(PLUGIN_DIR, 'packages', 'wakatime', 'cli.py')
 SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
-LAST_ACTION = {
+LAST_HEARTBEAT = {
     'time': 0,
     'file': None,
     'is_write': False,
@@ -137,7 +137,7 @@ def obfuscate_apikey(command_list):
 
 
 def enough_time_passed(now, last_time, is_write):
-    if now - last_time > ACTION_FREQUENCY * 60:
+    if now - last_time > HEARTBEAT_FREQUENCY * 60:
         return True
     if is_write and now - last_time > 2:
         return True
@@ -173,17 +173,17 @@ def find_project_from_folders(folders, current_file):
     return os.path.basename(folder) if folder else None
 
 
-def handle_action(view, is_write=False):
+def handle_heartbeat(view, is_write=False):
     window = view.window()
     if window is not None:
         target_file = view.file_name()
         project = window.project_data() if hasattr(window, 'project_data') else None
         folders = window.folders()
-        thread = SendActionThread(target_file, view, is_write=is_write, project=project, folders=folders)
+        thread = SendHeartbeatThread(target_file, view, is_write=is_write, project=project, folders=folders)
         thread.start()
 
 
-class SendActionThread(threading.Thread):
+class SendHeartbeatThread(threading.Thread):
 
     def __init__(self, target_file, view, is_write=False, project=None, folders=None, force=False):
         threading.Thread.__init__(self)
@@ -196,14 +196,14 @@ class SendActionThread(threading.Thread):
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
-        self.last_action = LAST_ACTION.copy()
+        self.last_heartbeat = LAST_HEARTBEAT.copy()
         self.view = view
 
     def run(self):
         with self.lock:
             if self.target_file:
                 self.timestamp = time.time()
-                if self.force or self.target_file != self.last_action['file'] or enough_time_passed(self.timestamp, self.last_action['time'], self.is_write):
+                if self.force or self.target_file != self.last_heartbeat['file'] or enough_time_passed(self.timestamp, self.last_heartbeat['time'], self.is_write):
                     self.send_heartbeat()
 
     def send_heartbeat(self):
@@ -245,15 +245,15 @@ class SendActionThread(threading.Thread):
 
     def sent(self):
         sublime.set_timeout(self.set_status_bar, 0)
-        sublime.set_timeout(self.set_last_action, 0)
+        sublime.set_timeout(self.set_last_heartbeat, 0)
 
     def set_status_bar(self):
         if SETTINGS.get('status_bar_message'):
             self.view.set_status('wakatime', 'WakaTime active {0}'.format(datetime.now().strftime('%I:%M %p')))
 
-    def set_last_action(self):
-        global LAST_ACTION
-        LAST_ACTION = {
+    def set_last_heartbeat(self):
+        global LAST_HEARTBEAT
+        LAST_HEARTBEAT = {
             'file': self.target_file,
             'time': self.timestamp,
             'is_write': self.is_write,
@@ -285,13 +285,13 @@ if ST_VERSION < 3000:
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        handle_action(view, is_write=True)
+        handle_heartbeat(view, is_write=True)
 
     def on_selection_modified(self, view):
-        handle_action(view)
+        handle_heartbeat(view)
 
     def on_modified(self, view):
-        handle_action(view)
+        handle_heartbeat(view)
 
 
 class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
