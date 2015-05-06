@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.3 (2015-05-06)
+++++++++++++++++++
+
+- send cursorpos to wakatime cli
+- upgrade wakatime cli to v4.0.10
+
+
 4.0.2 (2015-05-06)
 ++++++++++++++++++
 
