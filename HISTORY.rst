@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.1 (2015-05-06)
+++++++++++++++++++
+
+- ignore git temporary files
+- don't send two write heartbeats within 2 seconds of eachother
+
+
 4.0.0 (2015-04-12)
 ++++++++++++++++++
 
