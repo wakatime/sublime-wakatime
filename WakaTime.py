@@ -136,10 +136,10 @@ def obfuscate_apikey(command_list):
     return cmd
 
 
-def enough_time_passed(now, last_time, is_write):
-    if now - last_time > HEARTBEAT_FREQUENCY * 60:
+def enough_time_passed(now, last_heartbeat, is_write):
+    if now - last_heartbeat['time'] > HEARTBEAT_FREQUENCY * 60:
         return True
-    if is_write and now - last_time > 2:
+    if is_write and now - last_heartbeat['time'] > 2:
         return True
     return False
 
@@ -203,7 +203,7 @@ class SendHeartbeatThread(threading.Thread):
         with self.lock:
             if self.target_file:
                 self.timestamp = time.time()
-                if self.force or self.target_file != self.last_heartbeat['file'] or enough_time_passed(self.timestamp, self.last_heartbeat['time'], self.is_write):
+                if self.force or self.target_file != self.last_heartbeat['file'] or enough_time_passed(self.timestamp, self.last_heartbeat, self.is_write):
                     self.send_heartbeat()
 
     def send_heartbeat(self):
