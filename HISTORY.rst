@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.2 (2015-05-06)
+++++++++++++++++++
+
+- only send heartbeats for the currently active buffer
+
+
 4.0.1 (2015-05-06)
 ++++++++++++++++++
 
