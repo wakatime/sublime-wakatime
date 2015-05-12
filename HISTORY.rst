@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.4 (2015-05-12)
+++++++++++++++++++
+
+- reuse SSL connection over multiple processes for improved performance
+- upgrade wakatime cli to v4.0.11
+
+
 4.0.3 (2015-05-06)
 ++++++++++++++++++
 
