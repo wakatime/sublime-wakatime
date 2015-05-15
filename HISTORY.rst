@@ -3,6 +3,15 @@ History
 -------
 
 
+4.0.5 (2015-05-15)
+++++++++++++++++++
+
+- correctly display caller and lineno in log file when debug is true
+- project passed with --project argument will always be used
+- new --alternate-project argument
+- upgrade wakatime cli to v4.0.12
+
+
 4.0.4 (2015-05-12)
 ++++++++++++++++++
 
