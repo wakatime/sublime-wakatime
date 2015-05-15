@@ -232,11 +232,11 @@ class SendHeartbeatThread(threading.Thread):
         if self.is_write:
             cmd.append('--write')
         if self.project and self.project.get('name'):
-            cmd.extend(['--project', self.project.get('name')])
+            cmd.extend(['--alternate-project', self.project.get('name')])
         elif self.folders:
             project_name = find_project_from_folders(self.folders, self.target_file)
             if project_name:
-                cmd.extend(['--project', project_name])
+                cmd.extend(['--alternate-project', project_name])
         if self.cursorpos is not None:
             cmd.extend(['--cursorpos', '{0}'.format(self.cursorpos)])
         for pattern in self.ignore:
