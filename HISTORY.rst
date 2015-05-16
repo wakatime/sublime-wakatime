@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.6 (2015-05-16)
+++++++++++++++++++
+
+- fix bug with auto detecting project name
+- upgrade wakatime cli to v4.0.13
+
+
 4.0.5 (2015-05-15)
 ++++++++++++++++++
 
