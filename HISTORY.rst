@@ -3,6 +3,16 @@ History
 -------
 
 
+4.0.6 (2015-06-21)
+++++++++++++++++++
+
+- allow customizing status bar message in sublime-settings file
+- guess language using multiple methods, then use most accurate guess
+- use entity and type for new heartbeats api resource schema
+- correctly log message from py.warnings module
+- upgrade wakatime cli to v4.0.15
+
+
 4.0.6 (2015-05-16)
 ++++++++++++++++++
 
