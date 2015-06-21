@@ -16,5 +16,8 @@
     
     // Status bar message. Set to false to hide status bar message.
     // Defaults to true.
-    "status_bar_message": true
+    "status_bar_message": true,
+    
+    // Status bar message format.
+    "status_bar_message_fmt": "WakaTime active %I:%M %p"
 }

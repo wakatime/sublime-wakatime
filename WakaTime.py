@@ -262,7 +262,7 @@ class SendHeartbeatThread(threading.Thread):
 
     def set_status_bar(self):
         if SETTINGS.get('status_bar_message'):
-            self.view.set_status('wakatime', 'WakaTime active {0}'.format(datetime.now().strftime('%I:%M %p')))
+            self.view.set_status('wakatime', datetime.now().strftime(SETTINGS.get('status_bar_message_fmt')))
 
     def set_last_heartbeat(self):
         global LAST_HEARTBEAT
