@@ -3,7 +3,15 @@ History
 -------
 
 
-4.0.6 (2015-06-21)
+4.0.8 (2015-06-23)
+++++++++++++++++++
+
+- fix offline logging
+- limit language detection to known file extensions, unless file contents has a vim modeline
+- upgrade wakatime cli to v4.0.16
+
+
+4.0.7 (2015-06-21)
 ++++++++++++++++++
 
 - allow customizing status bar message in sublime-settings file
