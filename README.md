@@ -29,3 +29,14 @@ Screen Shots
 
 ![Project Overview](https://wakatime.com/static/img/ScreenShots/ScreenShot-2014-10-29.png)
 
+Troubleshooting
+---------------
+
+First, turn on debug mode in your `WakaTime.sublime-settings` file.
+
+![sublime user settings](https://wakatime.com/static/img/ScreenShots/sublime-wakatime-settings-menu.png)
+
+Add the line: `"debug": true`
+
+Then, open your Sublime Console with `View -> Show Console` to see the plugin executing the wakatime cli process when sending a heartbeat. Also, tail your `$HOME/.wakatime.log` file to debug wakatime cli problems.
+
