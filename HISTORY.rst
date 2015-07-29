@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.9 (2015-07-29)
+++++++++++++++++++
+
+- catch exceptions from pygments.modeline.get_filetype_from_buffer
+
+
 4.0.8 (2015-06-23)
 ++++++++++++++++++
 
