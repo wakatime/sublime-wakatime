@@ -19,6 +19,7 @@ import platform
 import sys
 import time
 import threading
+import urllib
 import webbrowser
 from datetime import datetime
 from subprocess import Popen
@@ -278,8 +279,12 @@ def plugin_loaded():
     print('[WakaTime] Initializing WakaTime plugin v%s' % __version__)
 
     if not python_binary():
-        sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
-        return
+        print('[WakaTime] Warning: Python binary not found.')
+        if platform.system() == 'Windows':
+            install_python()
+        else:
+            sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
+            return
 
     SETTINGS = sublime.load_settings(SETTINGS_FILE)
     after_loaded()
@@ -288,6 +293,23 @@ def plugin_loaded():
 def after_loaded():
     if not prompt_api_key():
         sublime.set_timeout(after_loaded, 500)
+
+
+def install_python():
+    print('[WakaTime] Downloading and installing python...')
+    url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi'
+    if platform.architecture()[0] == '64bit':
+        url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
+    python_msi = os.path.join(os.path.expanduser('~'), 'python.msi')
+    urllib.urlretrieve(url, python_msi)
+    args = [
+        'msiexec',
+        '/i',
+        python_msi,
+        '/norestart',
+        '/qb!',
+    ]
+    Popen(args)
 
 
 # need to call plugin_loaded because only ST3 will auto-call it
