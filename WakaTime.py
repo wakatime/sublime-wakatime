@@ -301,7 +301,10 @@ def install_python():
     if platform.architecture()[0] == '64bit':
         url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
     python_msi = os.path.join(os.path.expanduser('~'), 'python.msi')
-    urllib.urlretrieve(url, python_msi)
+    try:
+        urllib.urlretrieve(url, python_msi)
+    except AttributeError:
+        urllib.request.urlretrieve(url, python_msi)
     args = [
         'msiexec',
         '/i',
