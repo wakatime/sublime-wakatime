@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.14 (2015-08-25)
+++++++++++++++++++
+
+- upgrade wakatime cli to v4.1.2
+- fix bug in offline caching which prevented heartbeats from being cleaned up
+
+
 4.0.13 (2015-08-25)
 ++++++++++++++++++
 
