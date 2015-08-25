@@ -6,7 +6,6 @@ History
 4.0.13 (2015-08-25)
 ++++++++++++++++++
 
-
 - upgrade wakatime cli to v4.1.1
 - send hostname in X-Machine-Name header
 - catch exceptions from pygments.modeline.get_filetype_from_buffer
