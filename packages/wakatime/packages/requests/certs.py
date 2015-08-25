@@ -11,6 +11,7 @@ If you are packaging Requests, e.g., for a Linux distribution or a managed
 environment, you can change the definition of where() to return a separately
 packaged CA bundle.
 """
+import sys
 import os.path
 
 try:
@@ -19,7 +20,9 @@ except ImportError:
     def where():
         """Return the preferred certificate bundle."""
         # vendored bundle inside Requests
-        return os.path.join(os.path.dirname(__file__), 'cacert.pem')
+        is_py3 = (sys.version_info[0] == 3)
+        cacert = os.path.join(os.path.dirname(__file__), 'cacert.pem')
+        return cacert.encode('utf-8') if is_py3 else cacert
 
 if __name__ == '__main__':
     print(where())
