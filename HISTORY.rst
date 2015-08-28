@@ -3,6 +3,13 @@ History
 -------
 
 
+4.0.15 (2015-08-28)
+++++++++++++++++++
+
+- upgrade wakatime cli to v4.1.3
+- fix local session caching
+
+
 4.0.14 (2015-08-25)
 ++++++++++++++++++
 
