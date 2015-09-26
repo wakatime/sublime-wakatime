@@ -1,7 +1,7 @@
 sublime-wakatime
 ================
 
-Fully automatic time tracking for Sublime Text 2 & 3.
+Sublime Text 2 & 3 plugin to quantify your coding using https://wakatime.com/.
 
 Installation
 ------------
