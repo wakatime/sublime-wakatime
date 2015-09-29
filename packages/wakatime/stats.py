@@ -14,11 +14,11 @@ import os
 import sys
 
 from .compat import u, open
-from .languages import DependencyParser
+from .dependencies import DependencyParser
 
-if sys.version_info[0] == 2:
+if sys.version_info[0] == 2:  # pragma: nocover
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'packages', 'pygments_py2'))
-else:
+else:  # pragma: nocover
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'packages', 'pygments_py3'))
 from pygments.lexers import get_lexer_by_name, guess_lexer_for_filename
 from pygments.modeline import get_filetype_from_buffer
@@ -35,11 +35,8 @@ def guess_language(file_name):
     """
 
     language = get_language_from_extension(file_name)
-    if language:
-        return language, None
-
     lexer = smart_guess_lexer(file_name)
-    if lexer:
+    if language is None and lexer is not None:
         language = u(lexer.name)
 
     return language, lexer
@@ -63,7 +60,7 @@ def smart_guess_lexer(file_name):
         lexer = lexer1
     if (lexer2 and accuracy2 and
         (not accuracy1 or accuracy2 > accuracy1)):
-        lexer = lexer2
+        lexer = lexer2  # pragma: nocover
 
     return lexer
 
@@ -78,13 +75,13 @@ def guess_lexer_using_filename(file_name, text):
 
     try:
         lexer = guess_lexer_for_filename(file_name, text)
-    except:
+    except:  # pragma: nocover
         pass
 
     if lexer is not None:
         try:
             accuracy = lexer.analyse_text(text)
-        except:
+        except:  # pragma: nocover
             pass
 
     return lexer, accuracy
@@ -101,19 +98,19 @@ def guess_lexer_using_modeline(text):
     file_type = None
     try:
         file_type = get_filetype_from_buffer(text)
-    except:
+    except:  # pragma: nocover
         pass
 
     if file_type is not None:
         try:
             lexer = get_lexer_by_name(file_type)
-        except ClassNotFound:
+        except ClassNotFound:  # pragma: nocover
             pass
 
     if lexer is not None:
         try:
             accuracy = lexer.analyse_text(text)
-        except:
+        except:  # pragma: nocover
             pass
 
     return lexer, accuracy
@@ -123,11 +120,16 @@ def get_language_from_extension(file_name):
     """Returns a matching language for the given file extension.
     """
 
-    extension = os.path.splitext(file_name)[1].lower()
+    filepart, extension = os.path.splitext(file_name)
+
+    if os.path.exists(u('{0}{1}').format(u(filepart), u('.c'))) or os.path.exists(u('{0}{1}').format(u(filepart), u('.C'))):
+        return 'C'
+
+    extension = extension.lower()
     if extension == '.h':
         directory = os.path.dirname(file_name)
         available_files = os.listdir(directory)
-        available_extensions = zip(*map(os.path.splitext, available_files))[1]
+        available_extensions = list(zip(*map(os.path.splitext, available_files)))[1]
         available_extensions = [ext.lower() for ext in available_extensions]
         if '.cpp' in available_extensions:
             return 'C++'
@@ -143,7 +145,7 @@ def number_lines_in_file(file_name):
         with open(file_name, 'r', encoding='utf-8') as fh:
             for line in fh:
                 lines += 1
-    except:
+    except:  # pragma: nocover
         try:
             with open(file_name, 'r', encoding=sys.getfilesystemencoding()) as fh:
                 for line in fh:
@@ -153,8 +155,8 @@ def number_lines_in_file(file_name):
     return lines
 
 
-def get_file_stats(file_name, notfile=False, lineno=None, cursorpos=None):
-    if notfile:
+def get_file_stats(file_name, entity_type='file', lineno=None, cursorpos=None):
+    if entity_type != 'file':
         stats = {
             'language': None,
             'dependencies': [],
@@ -184,7 +186,7 @@ def get_file_contents(file_name):
     try:
         with open(file_name, 'r', encoding='utf-8') as fh:
             text = fh.read(512000)
-    except:
+    except:  # pragma: nocover
         try:
             with open(file_name, 'r', encoding=sys.getfilesystemencoding()) as fh:
                 text = fh.read(512000)

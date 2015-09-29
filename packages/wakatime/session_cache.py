@@ -19,7 +19,7 @@ import traceback
 try:
     import sqlite3
     HAS_SQL = True
-except ImportError:
+except ImportError:  # pragma: nocover
     HAS_SQL = False
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'packages'))
@@ -46,7 +46,7 @@ class SessionCache(object):
         """Saves a requests.Session object for the next heartbeat process.
         """
 
-        if not HAS_SQL:
+        if not HAS_SQL:  # pragma: nocover
             return
         try:
             conn, c = self.connect()
@@ -57,7 +57,7 @@ class SessionCache(object):
             c.execute('INSERT INTO session VALUES (:value)', values)
             conn.commit()
             conn.close()
-        except:
+        except:  # pragma: nocover
             log.error(traceback.format_exc())
 
 
@@ -67,7 +67,7 @@ class SessionCache(object):
         Gets Session from sqlite3 cache or creates a new Session.
         """
 
-        if not HAS_SQL:
+        if not HAS_SQL:  # pragma: nocover
             return requests.session()
 
         try:
@@ -83,12 +83,12 @@ class SessionCache(object):
             row = c.fetchone()
             if row is not None:
                 session = pickle.loads(row[0])
-        except:
+        except:  # pragma: nocover
             log.error(traceback.format_exc())
 
         try:
             conn.close()
-        except:
+        except:  # pragma: nocover
             log.error(traceback.format_exc())
 
         return session if session is not None else requests.session()
@@ -98,7 +98,7 @@ class SessionCache(object):
         """Clears all cached Session objects.
         """
 
-        if not HAS_SQL:
+        if not HAS_SQL:  # pragma: nocover
             return
         try:
             conn, c = self.connect()
