@@ -3,6 +3,19 @@ History
 -------
 
 
+4.0.16 (2015-09-29)
+++++++++++++++++++
+
+- upgrade wakatime cli to v4.1.8
+- fix bug in guess_language function
+- improve dependency detection
+- default request timeout of 30 seconds
+- new --timeout command line argument to change request timeout in seconds
+- allow passing command line arguments using sys.argv
+- fix entry point for pypi distribution
+- new --entity and --entitytype command line arguments
+
+
 4.0.15 (2015-08-28)
 ++++++++++++++++++
 
