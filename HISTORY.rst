@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.18 (2015-10-01)
+++++++++++++++++++
+
+- find python location from windows registry
+
+
 4.0.17 (2015-10-01)
 ++++++++++++++++++
 
