@@ -13,9 +13,9 @@ __version__ = '4.0.17'
 import sublime
 import sublime_plugin
 
-import glob
 import os
 import platform
+import re
 import sys
 import time
 import threading
@@ -23,6 +23,10 @@ import urllib
 import webbrowser
 from datetime import datetime
 from subprocess import Popen
+try:
+    import _winreg as winreg  # py2
+except ImportError:
+    import winreg  # py3
 
 
 # globals
@@ -101,6 +105,8 @@ def python_binary():
     global PYTHON_LOCATION
     if PYTHON_LOCATION is not None:
         return PYTHON_LOCATION
+
+    # look for python in PATH and common install locations
     paths = [
         "pythonw",
         "python",
@@ -108,20 +114,88 @@ def python_binary():
         "/usr/bin/python",
     ]
     for path in paths:
-        try:
-            Popen([path, '--version'])
+        path = find_python_in_folder(path)
+        if path is not None:
             PYTHON_LOCATION = path
             return path
-        except:
-            pass
-    for path in glob.iglob('/python*'):
-        path = os.path.realpath(os.path.join(path, 'pythonw'))
-        try:
-            Popen([path, '--version'])
-            PYTHON_LOCATION = path
-            return path
-        except:
-            pass
+
+    # look for python in windows registry
+    path = find_python_from_registry(r'SOFTWARE\Python\PythonCore')
+    if path is not None:
+        PYTHON_LOCATION = path
+        return path
+    path = find_python_from_registry(r'SOFTWARE\Wow6432Node\Python\PythonCore')
+    if path is not None:
+        PYTHON_LOCATION = path
+        return path
+
+    return None
+
+
+def find_python_from_registry(location, reg=None):
+    if platform.system() != 'Windows':
+        return None
+
+    if reg is None:
+        path = find_python_from_registry(location, reg=winreg.HKEY_CURRENT_USER)
+        if path is None:
+            path = find_python_from_registry(location, reg=winreg.HKEY_LOCAL_MACHINE)
+        return path
+
+    val = None
+    sub_key = 'InstallPath'
+    compiled = re.compile(r'^\d+\.\d+$')
+
+    try:
+        with winreg.OpenKey(reg, location) as handle:
+            versions = []
+            try:
+                for index in range(1024):
+                    version = winreg.EnumKey(handle, index)
+                    try:
+                        if compiled.search(version):
+                            versions.append(version)
+                    except re.error:
+                        pass
+            except EnvironmentError:
+                pass
+            versions.sort(reverse=True)
+            for version in versions:
+                try:
+                    path = winreg.QueryValue(handle, version + '\\' + sub_key)
+                    if path is not None:
+                        path = find_python_in_folder(path)
+                        if path is not None:
+                            return path
+                except WindowsError:
+                    print('[WakaTime] Warning: Could not read registry value "{reg}\\{key}\\{version}\\{sub_key}".'.format(
+                        reg='HKEY_CURRENT_USER',
+                        key=location,
+                        version=version,
+                        sub_key=sub_key,
+                    ))
+    except WindowsError:
+        print('[WakaTime] Warning: Could not read registry value "{reg}\\{key}".'.format(
+            reg='HKEY_CURRENT_USER',
+            key=location,
+        ))
+
+    return val
+
+
+def find_python_in_folder(folder):
+    path = os.path.realpath(os.path.join(folder, 'pythonw'))
+    try:
+        Popen([path, '--version'])
+        return path
+    except:
+        pass
+    path = os.path.realpath(os.path.join(folder, 'python'))
+    try:
+        Popen([path, '--version'])
+        return path
+    except:
+        pass
     return None
 
 
