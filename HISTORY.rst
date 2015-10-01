@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.17 (2015-10-01)
+++++++++++++++++++
+
+- download python in non blocking background thread for Windows machines
+
+
 4.0.16 (2015-09-29)
 ++++++++++++++++++
 
