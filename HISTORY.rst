@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.19 (2015-10-01)
+++++++++++++++++++
+
+- handle case where ST builtin python does not have _winreg or winreg module
+
+
 4.0.18 (2015-10-01)
 ++++++++++++++++++
 
