@@ -26,7 +26,10 @@ from subprocess import Popen
 try:
     import _winreg as winreg  # py2
 except ImportError:
-    import winreg  # py3
+    try:
+        import winreg  # py3
+    except ImportError:
+        winreg = None
 
 
 # globals
@@ -133,7 +136,7 @@ def python_binary():
 
 
 def find_python_from_registry(location, reg=None):
-    if platform.system() != 'Windows':
+    if platform.system() != 'Windows' or winreg is None:
         return None
 
     if reg is None:
