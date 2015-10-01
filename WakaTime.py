@@ -195,6 +195,8 @@ def handle_heartbeat(view, is_write=False):
 
 
 class SendHeartbeatThread(threading.Thread):
+    """Non-blocking thread for sending heartbeats to api.
+    """
 
     def __init__(self, target_file, view, is_write=False, project=None, folders=None, force=False):
         threading.Thread.__init__(self)
@@ -274,6 +276,30 @@ class SendHeartbeatThread(threading.Thread):
         }
 
 
+class InstallPython(threading.Thread):
+    """Non-blocking thread for installing Python on Windows machines.
+    """
+
+    def run(self):
+        print('[WakaTime] Downloading and installing python...')
+        url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi'
+        if platform.architecture()[0] == '64bit':
+            url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
+        python_msi = os.path.join(os.path.expanduser('~'), 'python.msi')
+        try:
+            urllib.urlretrieve(url, python_msi)
+        except AttributeError:
+            urllib.request.urlretrieve(url, python_msi)
+        args = [
+            'msiexec',
+            '/i',
+            python_msi,
+            '/norestart',
+            '/qb!',
+        ]
+        Popen(args)
+
+
 def plugin_loaded():
     global SETTINGS
     print('[WakaTime] Initializing WakaTime plugin v%s' % __version__)
@@ -281,7 +307,8 @@ def plugin_loaded():
     if not python_binary():
         print('[WakaTime] Warning: Python binary not found.')
         if platform.system() == 'Windows':
-            install_python()
+            thread = InstallPython()
+            thread.start()
         else:
             sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
             return
@@ -293,26 +320,6 @@ def plugin_loaded():
 def after_loaded():
     if not prompt_api_key():
         sublime.set_timeout(after_loaded, 500)
-
-
-def install_python():
-    print('[WakaTime] Downloading and installing python...')
-    url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi'
-    if platform.architecture()[0] == '64bit':
-        url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
-    python_msi = os.path.join(os.path.expanduser('~'), 'python.msi')
-    try:
-        urllib.urlretrieve(url, python_msi)
-    except AttributeError:
-        urllib.request.urlretrieve(url, python_msi)
-    args = [
-        'msiexec',
-        '/i',
-        python_msi,
-        '/norestart',
-        '/qb!',
-    ]
-    Popen(args)
 
 
 # need to call plugin_loaded because only ST3 will auto-call it
