@@ -3,6 +3,12 @@ History
 -------
 
 
+4.0.20 (2015-10-01)
+++++++++++++++++++
+
+- correctly find python binary in non-Windows environments
+
+
 4.0.19 (2015-10-01)
 ++++++++++++++++++
 
