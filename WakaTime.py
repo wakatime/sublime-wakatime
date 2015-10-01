@@ -133,7 +133,7 @@ def obfuscate_apikey(command_list):
             apikey_index = num + 1
             break
     if apikey_index is not None and apikey_index < len(cmd):
-        cmd[apikey_index] = '********-****-****-****-********' + cmd[apikey_index][-4:]
+        cmd[apikey_index] = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX' + cmd[apikey_index][-4:]
     return cmd
 
 
