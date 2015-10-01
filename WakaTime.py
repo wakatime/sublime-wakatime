@@ -111,10 +111,9 @@ def python_binary():
 
     # look for python in PATH and common install locations
     paths = [
-        "pythonw",
-        "python",
-        "/usr/local/bin/python",
-        "/usr/bin/python",
+        '/',
+        '/usr/local/bin/',
+        '/usr/bin/',
     ]
     for path in paths:
         path = find_python_in_folder(path)
