@@ -3,6 +3,13 @@ History
 -------
 
 
+5.0.0 (2015-10-02)
+++++++++++++++++++
+
+- improve logging with levels and log function
+- switch registry warnings to debug log level
+
+
 4.0.20 (2015-10-01)
 ++++++++++++++++++
 
