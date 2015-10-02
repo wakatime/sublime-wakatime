@@ -48,12 +48,33 @@ LOCK = threading.RLock()
 PYTHON_LOCATION = None
 
 
+# Log Levels
+DEBUG = 'DEBUG'
+INFO = 'INFO'
+WARNING = 'WARNING'
+ERROR = 'ERROR'
+
+
 # add wakatime package to path
 sys.path.insert(0, os.path.join(PLUGIN_DIR, 'packages'))
 try:
     from wakatime.base import parseConfigFile
 except ImportError:
     pass
+
+
+def log(lvl, message, *args, **kwargs):
+    try:
+        if lvl == DEBUG and not SETTINGS.get('debug'):
+            return
+        msg = message
+        if len(args) > 0:
+            msg = message.format(*args)
+        elif len(kwargs) > 0:
+            msg = message.format(**kwargs)
+        print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
+    except RuntimeError:
+        sublime.set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
 
 
 def createConfigFile():
@@ -100,12 +121,11 @@ def prompt_api_key():
             window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', default_key, got_key, None, None)
             return True
         else:
-            print('[WakaTime] Error: Could not prompt for api key because no window found.')
+            log(ERROR, 'Could not prompt for api key because no window found.')
     return False
 
 
 def python_binary():
-    global PYTHON_LOCATION
     if PYTHON_LOCATION is not None:
         return PYTHON_LOCATION
 
@@ -118,20 +138,26 @@ def python_binary():
     for path in paths:
         path = find_python_in_folder(path)
         if path is not None:
-            PYTHON_LOCATION = path
+            set_python_binary_location(path)
             return path
 
     # look for python in windows registry
     path = find_python_from_registry(r'SOFTWARE\Python\PythonCore')
     if path is not None:
-        PYTHON_LOCATION = path
+        set_python_binary_location(path)
         return path
     path = find_python_from_registry(r'SOFTWARE\Wow6432Node\Python\PythonCore')
     if path is not None:
-        PYTHON_LOCATION = path
+        set_python_binary_location(path)
         return path
 
     return None
+
+
+def set_python_binary_location(path):
+    global PYTHON_LOCATION
+    PYTHON_LOCATION = path
+    log(DEBUG, 'Python Binary Found: {0}'.format(path))
 
 
 def find_python_from_registry(location, reg=None):
@@ -168,19 +194,26 @@ def find_python_from_registry(location, reg=None):
                     if path is not None:
                         path = find_python_in_folder(path)
                         if path is not None:
+                            log(DEBUG, 'Found python from {reg}\\{key}\\{version}\\{sub_key}.'.format(
+                                reg=reg,
+                                key=location,
+                                version=version,
+                                sub_key=sub_key,
+                            ))
                             return path
                 except WindowsError:
-                    print('[WakaTime] Warning: Could not read registry value "{reg}\\{key}\\{version}\\{sub_key}".'.format(
-                        reg='HKEY_CURRENT_USER',
+                    log(DEBUG, 'Could not read registry value "{reg}\\{key}\\{version}\\{sub_key}".'.format(
+                        reg=reg,
                         key=location,
                         version=version,
                         sub_key=sub_key,
                     ))
     except WindowsError:
-        print('[WakaTime] Warning: Could not read registry value "{reg}\\{key}".'.format(
-            reg='HKEY_CURRENT_USER',
-            key=location,
-        ))
+        if SETTINGS.get('debug'):
+            log(DEBUG, 'Could not read registry value "{reg}\\{key}".'.format(
+                reg=reg,
+                key=location,
+            ))
 
     return val
 
@@ -298,7 +331,7 @@ class SendHeartbeatThread(threading.Thread):
 
     def send_heartbeat(self):
         if not self.api_key:
-            print('[WakaTime] Error: missing api key.')
+            log(ERROR, 'missing api key.')
             return
         ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
         cmd = [
@@ -324,8 +357,7 @@ class SendHeartbeatThread(threading.Thread):
             cmd.append('--verbose')
         if python_binary():
             cmd.insert(0, python_binary())
-            if self.debug:
-                print('[WakaTime] %s' % ' '.join(obfuscate_apikey(cmd)))
+            log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
             if platform.system() == 'Windows':
                 Popen(cmd, shell=False)
             else:
@@ -333,7 +365,7 @@ class SendHeartbeatThread(threading.Thread):
                     Popen(cmd, stderr=stderr)
             self.sent()
         else:
-            print('[WakaTime] Error: Unable to find python binary.')
+            log(ERROR, 'Unable to find python binary.')
 
     def sent(self):
         sublime.set_timeout(self.set_status_bar, 0)
@@ -357,7 +389,7 @@ class InstallPython(threading.Thread):
     """
 
     def run(self):
-        print('[WakaTime] Downloading and installing python...')
+        log(INFO, 'Downloading and installing python...')
         url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi'
         if platform.architecture()[0] == '64bit':
             url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
@@ -378,10 +410,12 @@ class InstallPython(threading.Thread):
 
 def plugin_loaded():
     global SETTINGS
-    print('[WakaTime] Initializing WakaTime plugin v%s' % __version__)
+    log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
+
+    SETTINGS = sublime.load_settings(SETTINGS_FILE)
 
     if not python_binary():
-        print('[WakaTime] Warning: Python binary not found.')
+        log(WARNING, 'Python binary not found.')
         if platform.system() == 'Windows':
             thread = InstallPython()
             thread.start()
@@ -389,7 +423,6 @@ def plugin_loaded():
             sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
             return
 
-    SETTINGS = sublime.load_settings(SETTINGS_FILE)
     after_loaded()
 
 
