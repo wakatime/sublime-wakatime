@@ -7,7 +7,7 @@ Website:     https://wakatime.com/
 ==========================================================="""
 
 
-__version__ = '5.0.0'
+__version__ = '5.0.1'
 
 
 import sublime
@@ -220,7 +220,7 @@ def find_python_from_registry(location, reg=None):
 
 
 def find_python_in_folder(folder):
-    path = os.path.realpath('pythonw')
+    path = 'pythonw'
     if folder is not None:
         path = os.path.realpath(os.path.join(folder, 'pythonw'))
     try:
@@ -228,7 +228,7 @@ def find_python_in_folder(folder):
         return path
     except:
         pass
-    path = os.path.realpath('python')
+    path = 'python'
     if folder is not None:
         path = os.path.realpath(os.path.join(folder, 'python'))
     try:
