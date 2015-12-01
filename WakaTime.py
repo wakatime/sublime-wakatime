@@ -418,6 +418,11 @@ class InstallPython(threading.Thread):
             path = os.path.join(os.path.expanduser('~'), '.wakatime', 'python')
             zf.extractall(path)
 
+        try:
+            os.remove(zip_file)
+        except:
+            pass
+
 
 def plugin_loaded():
     global SETTINGS
