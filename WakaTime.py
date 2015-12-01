@@ -391,12 +391,12 @@ class SendHeartbeatThread(threading.Thread):
         }
 
 
-class InstallPython(threading.Thread):
-    """Non-blocking thread for installing Python on Windows machines.
+class DownloadPython(threading.Thread):
+    """Non-blocking thread for extracting embeddable Python on Windows machines.
     """
 
     def run(self):
-        log(INFO, 'Downloading and installing python...')
+        log(INFO, 'Downloading embeddable Python...')
 
         ver = '3.5.0'
         arch = 'amd64' if platform.architecture()[0] == '64bit' else 'win32'
@@ -414,6 +414,7 @@ class InstallPython(threading.Thread):
         except AttributeError:
             urllib.request.urlretrieve(url, zip_file)
 
+        log(INFO, 'Extracting Python...')
         with ZipFile(zip_file) as zf:
             path = os.path.join(os.path.expanduser('~'), '.wakatime', 'python')
             zf.extractall(path)
@@ -422,6 +423,8 @@ class InstallPython(threading.Thread):
             os.remove(zip_file)
         except:
             pass
+
+        log(INFO, 'Finished extracting Python.')
 
 
 def plugin_loaded():
@@ -433,7 +436,7 @@ def plugin_loaded():
     if not python_binary():
         log(WARNING, 'Python binary not found.')
         if platform.system() == 'Windows':
-            thread = InstallPython()
+            thread = DownloadPython()
             thread.start()
         else:
             sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
