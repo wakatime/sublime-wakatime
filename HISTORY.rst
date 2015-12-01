@@ -3,6 +3,12 @@ History
 -------
 
 
+6.0.0 (2015-12-01)
+++++++++++++++++++
+
+- use embeddable Python instead of installing on Windows
+
+
 5.0.1 (2015-10-06)
 ++++++++++++++++++
 
