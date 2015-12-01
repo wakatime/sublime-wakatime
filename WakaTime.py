@@ -22,6 +22,7 @@ import threading
 import urllib
 import webbrowser
 from datetime import datetime
+from zipfile import ZipFile
 from subprocess import Popen
 try:
     import _winreg as winreg  # py2
@@ -131,6 +132,7 @@ def python_binary():
 
     # look for python in PATH and common install locations
     paths = [
+        os.path.join(os.path.expanduser('~'), '.wakatime', 'python'),
         None,
         '/',
         '/usr/local/bin/',
@@ -395,22 +397,26 @@ class InstallPython(threading.Thread):
 
     def run(self):
         log(INFO, 'Downloading and installing python...')
-        url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi'
-        if platform.architecture()[0] == '64bit':
-            url = 'https://www.python.org/ftp/python/3.4.3/python-3.4.3.amd64.msi'
-        python_msi = os.path.join(os.path.expanduser('~'), 'python.msi')
+
+        ver = '3.5.0'
+        arch = 'amd64' if platform.architecture()[0] == '64bit' else 'win32'
+        url = 'https://www.python.org/ftp/python/{ver}/python-{ver}-embed-{arch}.zip'.format(
+            ver=ver,
+            arch=arch,
+        )
+
+        if not os.path.exists(os.path.join(os.path.expanduser('~'), '.wakatime')):
+            os.makedirs(os.path.join(os.path.expanduser('~'), '.wakatime'))
+
+        zip_file = os.path.join(os.path.expanduser('~'), '.wakatime', 'python.zip')
         try:
-            urllib.urlretrieve(url, python_msi)
+            urllib.urlretrieve(url, zip_file)
         except AttributeError:
-            urllib.request.urlretrieve(url, python_msi)
-        args = [
-            'msiexec',
-            '/i',
-            python_msi,
-            '/norestart',
-            '/qb!',
-        ]
-        Popen(args)
+            urllib.request.urlretrieve(url, zip_file)
+
+        with ZipFile(zip_file) as zf:
+            path = os.path.join(os.path.expanduser('~'), '.wakatime', 'python')
+            zf.extractall(path)
 
 
 def plugin_loaded():
