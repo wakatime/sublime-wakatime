@@ -3,6 +3,13 @@ History
 -------
 
 
+6.0.1 (2016-01-01)
+++++++++++++++++++
+
+- use embedded python if system python is broken, or doesn't output a version number
+- log output from wakatime-cli in ST console when in debug mode
+
+
 6.0.0 (2015-12-01)
 ++++++++++++++++++
 
