@@ -23,7 +23,7 @@ import urllib
 import webbrowser
 from datetime import datetime
 from zipfile import ZipFile
-from subprocess import Popen
+from subprocess import Popen, STDOUT, PIPE
 try:
     import _winreg as winreg  # py2
 except ImportError:
@@ -31,6 +31,49 @@ except ImportError:
         import winreg  # py3
     except ImportError:
         winreg = None
+
+
+is_py2 = (sys.version_info[0] == 2)
+is_py3 = (sys.version_info[0] == 3)
+
+if is_py2:
+    def u(text):
+        if text is None:
+            return None
+        try:
+            return text.decode('utf-8')
+        except:
+            try:
+                return text.decode(sys.getdefaultencoding())
+            except:
+                try:
+                    return unicode(text)
+                except:
+                    return text
+
+elif is_py3:
+    def u(text):
+        if text is None:
+            return None
+        if isinstance(text, bytes):
+            try:
+                return text.decode('utf-8')
+            except:
+                try:
+                    return text.decode(sys.getdefaultencoding())
+                except:
+                    pass
+        try:
+            return str(text)
+        except:
+            return text
+
+else:
+    raise Exception('Unsupported Python version: {0}.{1}.{2}'.format(
+        sys.version_info[0],
+        sys.version_info[1],
+        sys.version_info[2],
+    ))
 
 
 # globals
@@ -160,7 +203,7 @@ def python_binary():
 def set_python_binary_location(path):
     global PYTHON_LOCATION
     PYTHON_LOCATION = path
-    log(DEBUG, 'Python Binary Found: {0}'.format(path))
+    log(DEBUG, 'Found Python at: {0}'.format(path))
 
 
 def find_python_from_registry(location, reg=None):
@@ -221,23 +264,31 @@ def find_python_from_registry(location, reg=None):
     return val
 
 
-def find_python_in_folder(folder):
-    path = 'pythonw'
-    if folder is not None:
-        path = os.path.realpath(os.path.join(folder, 'pythonw'))
-    try:
-        Popen([path, '--version'])
-        return path
-    except:
-        pass
+def find_python_in_folder(folder, headless=True):
+    pattern = re.compile(r'\d+\.\d+')
+
     path = 'python'
     if folder is not None:
         path = os.path.realpath(os.path.join(folder, 'python'))
+    if headless:
+        path = path + 'w'
+    log(DEBUG, 'Looking for Python at: {0}'.format(path))
     try:
-        Popen([path, '--version'])
-        return path
+        process = Popen([path, '--version'], stdout=PIPE, stderr=STDOUT)
+        output, err = process.communicate()
+        output = u(output).strip()
+        retcode = process.poll()
+        log(DEBUG, 'Python Version Output: {0}'.format(output))
+        if not retcode and pattern.search(output):
+            return path
     except:
-        pass
+        log(DEBUG, 'Python Version Output: {0}'.format(u(sys.exc_info()[1])))
+
+    if headless:
+        path = find_python_in_folder(folder, headless=False)
+        if path is not None:
+            return path
+
     return None
 
 
@@ -366,7 +417,7 @@ class SendHeartbeatThread(threading.Thread):
             cmd.insert(0, python_binary())
             log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
             if platform.system() == 'Windows':
-                Popen(cmd, shell=False)
+                Popen(cmd)
             else:
                 with open(os.path.join(os.path.expanduser('~'), '.wakatime.log'), 'a') as stderr:
                     Popen(cmd, stderr=stderr)
