@@ -271,18 +271,18 @@ def find_python_in_folder(folder, headless=True):
     if folder is not None:
         path = os.path.realpath(os.path.join(folder, 'python'))
     if headless:
-        path = path + 'w'
-    log(DEBUG, 'Looking for Python at: {0}'.format(path))
+        path = u(path) + u('w')
+    log(DEBUG, u('Looking for Python at: {0}').format(path))
     try:
         process = Popen([path, '--version'], stdout=PIPE, stderr=STDOUT)
         output, err = process.communicate()
         output = u(output).strip()
         retcode = process.poll()
-        log(DEBUG, 'Python Version Output: {0}'.format(output))
+        log(DEBUG, u('Python Version Output: {0}').format(output))
         if not retcode and pattern.search(output):
             return path
     except:
-        log(DEBUG, 'Python Version Output: {0}'.format(u(sys.exc_info()[1])))
+        log(DEBUG, u('Python Version Output: {0}').format(u(sys.exc_info()[1])))
 
     if headless:
         path = find_python_in_folder(folder, headless=False)
@@ -416,12 +416,23 @@ class SendHeartbeatThread(threading.Thread):
         if python_binary():
             cmd.insert(0, python_binary())
             log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
-            if platform.system() == 'Windows':
-                Popen(cmd)
-            else:
-                with open(os.path.join(os.path.expanduser('~'), '.wakatime.log'), 'a') as stderr:
-                    Popen(cmd, stderr=stderr)
-            self.sent()
+            try:
+                if not self.debug:
+                    Popen(cmd)
+                    self.sent()
+                else:
+                    process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+                    output, err = process.communicate()
+                    output = u(output)
+                    retcode = process.poll()
+                    if (not retcode or retcode == 102) and not output:
+                        self.sent()
+                    if retcode:
+                        log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
+                    if output:
+                        log(ERROR, u('wakatime-core output: {0}').format(output))
+            except:
+                log(ERROR, u(sys.exc_info()[1]))
         else:
             log(ERROR, 'Unable to find python binary.')
 
