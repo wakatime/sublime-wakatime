@@ -1,13 +1,12 @@
 sublime-wakatime
 ================
 
-Sublime Text 2 & 3 plugin to quantify your coding using https://wakatime.com/.
+Metrics, insights, and time tracking automatically generated from your programming activity.
+
 
 Installation
 ------------
 
-Heads Up! For Sublime Text 2 on Windows & Linux, WakaTime depends on [Python](http://www.python.org/getit/) being installed to work correctly.
-    
 1. Install [Package Control](https://packagecontrol.io/installation).
 
 2. Using [Package Control](https://packagecontrol.io/docs/usage):
