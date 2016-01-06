@@ -30,6 +30,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pac
 
 from .__about__ import __version__
 from .compat import u, open, is_py3
+from .constants import SUCCESS, API_ERROR, CONFIG_FILE_PARSE_ERROR
 from .logger import setup_logging
 from .offlinequeue import Queue
 from .packages import argparse
@@ -290,7 +291,7 @@ def send_heartbeat(project=None, branch=None, hostname=None, stats={}, key=None,
     """
 
     if not api_url:
-        api_url = 'https://wakatime.com/api/v1/heartbeats'
+        api_url = 'https://api.wakatime.com/api/v1/heartbeats'
     if not timeout:
         timeout = 30
     log.debug('Sending heartbeat to api at %s' % api_url)
@@ -408,63 +409,68 @@ def execute(argv=None):
 
     args, configs = parseArguments()
     if configs is None:
-        return 103 # config file parsing error
+        return CONFIG_FILE_PARSE_ERROR
 
     setup_logging(args, __version__)
 
-    exclude = should_exclude(args.entity, args.include, args.exclude)
-    if exclude is not False:
-        log.debug(u('Skipping because matches exclude pattern: {pattern}').format(
-            pattern=u(exclude),
-        ))
-        return 0
+    try:
+        exclude = should_exclude(args.entity, args.include, args.exclude)
+        if exclude is not False:
+            log.debug(u('Skipping because matches exclude pattern: {pattern}').format(
+                pattern=u(exclude),
+            ))
+            return SUCCESS
 
-    if args.entity_type != 'file' or os.path.isfile(args.entity):
+        if args.entity_type != 'file' or os.path.isfile(args.entity):
 
-        stats = get_file_stats(args.entity, entity_type=args.entity_type,
-                               lineno=args.lineno, cursorpos=args.cursorpos)
+            stats = get_file_stats(args.entity,
+                                   entity_type=args.entity_type,
+                                   lineno=args.lineno,
+                                   cursorpos=args.cursorpos)
 
-        project = args.project or args.alternate_project
-        branch = None
-        if args.entity_type == 'file':
-            project, branch = get_project_info(configs, args)
+            project = args.project or args.alternate_project
+            branch = None
+            if args.entity_type == 'file':
+                project, branch = get_project_info(configs, args)
 
-        kwargs = vars(args)
-        kwargs['project'] = project
-        kwargs['branch'] = branch
-        kwargs['stats'] = stats
-        kwargs['hostname'] = args.hostname or socket.gethostname()
-        kwargs['timeout'] = args.timeout
+            kwargs = vars(args)
+            kwargs['project'] = project
+            kwargs['branch'] = branch
+            kwargs['stats'] = stats
+            kwargs['hostname'] = args.hostname or socket.gethostname()
+            kwargs['timeout'] = args.timeout
 
-        if send_heartbeat(**kwargs):
-            queue = Queue()
-            while True:
-                heartbeat = queue.pop()
-                if heartbeat is None:
-                    break
-                sent = send_heartbeat(
-                    project=heartbeat['project'],
-                    entity=heartbeat['entity'],
-                    timestamp=heartbeat['time'],
-                    branch=heartbeat['branch'],
-                    hostname=kwargs['hostname'],
-                    stats=json.loads(heartbeat['stats']),
-                    key=args.key,
-                    isWrite=heartbeat['is_write'],
-                    plugin=heartbeat['plugin'],
-                    offline=args.offline,
-                    hidefilenames=args.hidefilenames,
-                    entity_type=heartbeat['type'],
-                    proxy=args.proxy,
-                    api_url=args.api_url,
-                    timeout=args.timeout,
-                )
-                if not sent:
-                    break
-            return 0 # success
+            if send_heartbeat(**kwargs):
+                queue = Queue()
+                while True:
+                    heartbeat = queue.pop()
+                    if heartbeat is None:
+                        break
+                    sent = send_heartbeat(
+                        project=heartbeat['project'],
+                        entity=heartbeat['entity'],
+                        timestamp=heartbeat['time'],
+                        branch=heartbeat['branch'],
+                        hostname=kwargs['hostname'],
+                        stats=json.loads(heartbeat['stats']),
+                        key=args.key,
+                        isWrite=heartbeat['is_write'],
+                        plugin=heartbeat['plugin'],
+                        offline=args.offline,
+                        hidefilenames=args.hidefilenames,
+                        entity_type=heartbeat['type'],
+                        proxy=args.proxy,
+                        api_url=args.api_url,
+                        timeout=args.timeout,
+                    )
+                    if not sent:
+                        break
+                return SUCCESS
 
-        return 102 # api error
+            return API_ERROR
 
-    else:
-        log.debug('File does not exist; ignoring this heartbeat.')
-        return 0
+        else:
+            log.debug('File does not exist; ignoring this heartbeat.')
+            return SUCCESS
+    except:
+        log.traceback()
