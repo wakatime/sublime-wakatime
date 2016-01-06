@@ -3,6 +3,18 @@ History
 -------
 
 
+6.0.2 (2016-01-06)
+++++++++++++++++++
+
+- upgrade wakatime-cli core to v4.1.9
+- improve C# dependency detection
+- correctly log exception tracebacks
+- log all unknown exceptions to wakatime.log file
+- disable urllib3 SSL warning from every request
+- detect dependencies from golang files
+- use api.wakatime.com for sending heartbeats
+
+
 6.0.1 (2016-01-01)
 ++++++++++++++++++
 
