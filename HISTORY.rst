@@ -3,6 +3,14 @@ History
 -------
 
 
+6.0.3 (2016-01-11)
+++++++++++++++++++
+
+- upgrade wakatime-cli core to v4.1.10
+- accept 201 or 202 response codes as success from api
+- upgrade requests package to v2.9.1
+
+
 6.0.2 (2016-01-06)
 ++++++++++++++++++
 
