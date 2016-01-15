@@ -3,6 +3,12 @@ History
 -------
 
 
+6.0.4 (2016-01-15)
+++++++++++++++++++
+
+- fix UnicodeDecodeError on ST2 with non-English locale
+
+
 6.0.3 (2016-01-11)
 ++++++++++++++++++
 

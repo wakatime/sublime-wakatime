@@ -7,7 +7,7 @@ Website:     https://wakatime.com/
 ==========================================================="""
 
 
-__version__ = '6.0.3'
+__version__ = '6.0.4'
 
 
 import sublime
