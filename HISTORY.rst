@@ -3,6 +3,12 @@ History
 -------
 
 
+6.0.7 (2016-03-11)
+++++++++++++++++++
+
+- Fix bug causing RuntimeError when finding Python location
+
+
 6.0.6 (2016-03-06)
 ++++++++++++++++++
 
