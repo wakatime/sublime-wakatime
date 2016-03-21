@@ -27,7 +27,7 @@ Installation
 Screen Shots
 ------------
 
-![Project Overview](https://wakatime.com/static/img/ScreenShots/Screen-Shot-2015-11-14.png)
+![Project Overview](https://wakatime.com/static/img/ScreenShots/Screen-Shot-2016-03-21.png)
 
 
 Unresponsive Plugin Warning
