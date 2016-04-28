@@ -13,6 +13,7 @@ __version__ = '6.0.8'
 import sublime
 import sublime_plugin
 
+import json
 import os
 import platform
 import re
@@ -31,6 +32,10 @@ except ImportError:
         import winreg  # py3
     except ImportError:
         winreg = None
+try:
+    import Queue as queue  # py2
+except ImportError:
+    import queue  # py3
 
 
 is_py2 = (sys.version_info[0] == 2)
@@ -89,8 +94,8 @@ LAST_HEARTBEAT = {
     'file': None,
     'is_write': False,
 }
-LOCK = threading.RLock()
 PYTHON_LOCATION = None
+HEARTBEATS = queue.Queue()
 
 
 # Log Levels
@@ -108,6 +113,20 @@ except ImportError:
     pass
 
 
+def set_timeout(callback, seconds):
+    """Runs the callback after the given seconds delay.
+
+    If this is Sublime Text 3, runs the callback on an alternate thread. If this
+    is Sublime Text 2, runs the callback in the main thread.
+    """
+
+    milliseconds = int(seconds * 1000)
+    try:
+        sublime.set_timeout_async(callback, milliseconds)
+    except AttributeError:
+        sublime.set_timeout(callback, milliseconds)
+
+
 def log(lvl, message, *args, **kwargs):
     try:
         if lvl == DEBUG and not SETTINGS.get('debug'):
@@ -119,7 +138,24 @@ def log(lvl, message, *args, **kwargs):
             msg = message.format(**kwargs)
         print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
     except RuntimeError:
-        sublime.set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
+        set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
+
+
+def update_status_bar(status):
+    """Updates the status bar."""
+
+    try:
+        if SETTINGS.get('status_bar_message'):
+            msg = datetime.now().strftime(SETTINGS.get('status_bar_message_fmt'))
+            if '{status}' in msg:
+                msg = msg.format(status=status)
+
+            active_window = sublime.active_window()
+            if active_window:
+                for view in active_window.views():
+                    view.set_status('wakatime', msg)
+    except RuntimeError:
+        set_timeout(lambda: update_status_bar(status), 0)
 
 
 def createConfigFile():
@@ -304,10 +340,10 @@ def obfuscate_apikey(command_list):
     return cmd
 
 
-def enough_time_passed(now, last_heartbeat, is_write):
-    if now - last_heartbeat['time'] > HEARTBEAT_FREQUENCY * 60:
+def enough_time_passed(now, is_write):
+    if now - LAST_HEARTBEAT['time'] > HEARTBEAT_FREQUENCY * 60:
         return True
-    if is_write and now - last_heartbeat['time'] > 2:
+    if is_write and now - LAST_HEARTBEAT['time'] > 2:
         return True
     return False
 
@@ -354,103 +390,173 @@ def is_view_active(view):
 def handle_heartbeat(view, is_write=False):
     window = view.window()
     if window is not None:
-        target_file = view.file_name()
-        project = window.project_data() if hasattr(window, 'project_data') else None
-        folders = window.folders()
-        thread = SendHeartbeatThread(target_file, view, is_write=is_write, project=project, folders=folders)
-        thread.start()
+        entity = view.file_name()
+        if entity:
+            timestamp = time.time()
+            last_file = LAST_HEARTBEAT['file']
+            if entity != last_file or enough_time_passed(timestamp, is_write):
+                project = window.project_data() if hasattr(window, 'project_data') else None
+                folders = window.folders()
+                append_heartbeat(entity, timestamp, is_write, view, project, folders)
 
 
-class SendHeartbeatThread(threading.Thread):
+def append_heartbeat(entity, timestamp, is_write, view, project, folders):
+    global LAST_HEARTBEAT
+
+    # add this heartbeat to queue
+    heartbeat = {
+        'entity': entity,
+        'timestamp': timestamp,
+        'is_write': is_write,
+        'cursorpos': view.sel()[0].begin() if view.sel() else None,
+        'project': project,
+        'folders': folders,
+    }
+    HEARTBEATS.put_nowait(heartbeat)
+
+    # make this heartbeat the LAST_HEARTBEAT
+    LAST_HEARTBEAT = {
+        'file': entity,
+        'time': timestamp,
+        'is_write': is_write,
+    }
+
+    # process the queue of heartbeats in the future
+    seconds = 4
+    set_timeout(process_queue, seconds)
+
+
+def process_queue():
+    try:
+        heartbeat = HEARTBEATS.get_nowait()
+    except queue.Empty:
+        return
+
+    has_extra_heartbeats = False
+    extra_heartbeats = []
+    try:
+        while True:
+            extra_heartbeats.append(HEARTBEATS.get_nowait())
+            has_extra_heartbeats = True
+    except queue.Empty:
+        pass
+
+    thread = SendHeartbeatsThread(heartbeat)
+    if has_extra_heartbeats:
+        thread.add_extra_heartbeats(extra_heartbeats)
+    thread.start()
+
+
+class SendHeartbeatsThread(threading.Thread):
     """Non-blocking thread for sending heartbeats to api.
     """
 
-    def __init__(self, target_file, view, is_write=False, project=None, folders=None, force=False):
+    def __init__(self, heartbeat):
         threading.Thread.__init__(self)
-        self.lock = LOCK
-        self.target_file = target_file
-        self.is_write = is_write
-        self.project = project
-        self.folders = folders
-        self.force = force
+
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
-        self.last_heartbeat = LAST_HEARTBEAT.copy()
-        self.cursorpos = view.sel()[0].begin() if view.sel() else None
-        self.view = view
+
+        self.heartbeat = heartbeat
+        self.has_extra_heartbeats = False
+
+    def add_extra_heartbeats(self, extra_heartbeats):
+        self.has_extra_heartbeats = True
+        self.extra_heartbeats = extra_heartbeats
 
     def run(self):
-        with self.lock:
-            if self.target_file:
-                self.timestamp = time.time()
-                if self.force or self.target_file != self.last_heartbeat['file'] or enough_time_passed(self.timestamp, self.last_heartbeat, self.is_write):
-                    self.send_heartbeat()
+        """Running in background thread."""
 
-    def send_heartbeat(self):
-        if not self.api_key:
-            log(ERROR, 'missing api key.')
-            return
-        ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
-        cmd = [
-            API_CLIENT,
-            '--file', self.target_file,
-            '--time', str('%f' % self.timestamp),
-            '--plugin', ua,
-            '--key', str(bytes.decode(self.api_key.encode('utf8'))),
-        ]
-        if self.is_write:
-            cmd.append('--write')
-        if self.project and self.project.get('name'):
-            cmd.extend(['--alternate-project', self.project.get('name')])
-        elif self.folders:
-            project_name = find_project_from_folders(self.folders, self.target_file)
+        self.send_heartbeats()
+
+    def build_heartbeat(self, entity=None, timestamp=None, is_write=None,
+                        cursorpos=None, project=None, folders=None):
+        """Returns a dict for passing to wakatime-cli as arguments."""
+
+        heartbeat = {
+            'entity': entity,
+            'timestamp': timestamp,
+            'is_write': is_write,
+        }
+
+        if project and project.get('name'):
+            heartbeat['alternate_project'] = project.get('name')
+        elif folders:
+            project_name = find_project_from_folders(folders, entity)
             if project_name:
-                cmd.extend(['--alternate-project', project_name])
-        if self.cursorpos is not None:
-            cmd.extend(['--cursorpos', '{0}'.format(self.cursorpos)])
-        for pattern in self.ignore:
-            cmd.extend(['--ignore', pattern])
-        if self.debug:
-            cmd.append('--verbose')
+                heartbeat['alternate_project'] = project_name
+
+        if cursorpos is not None:
+            heartbeat['cursorpos'] = '{0}'.format(cursorpos)
+
+        return heartbeat
+
+    def send_heartbeats(self):
         if python_binary():
-            cmd.insert(0, python_binary())
+            heartbeat = self.build_heartbeat(**self.heartbeat)
+            ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
+            cmd = [
+                python_binary(),
+                API_CLIENT,
+                '--entity', heartbeat['entity'],
+                '--time', str('%f' % heartbeat['timestamp']),
+                '--plugin', ua,
+            ]
+            if self.api_key:
+                cmd.extend(['--key', str(bytes.decode(self.api_key.encode('utf8')))])
+            if heartbeat['is_write']:
+                cmd.append('--write')
+            if heartbeat.get('alternate_project'):
+                cmd.extend(['--alternate-project', heartbeat['alternate_project']])
+            if heartbeat.get('cursorpos') is not None:
+                cmd.extend(['--cursorpos', heartbeat['cursorpos']])
+            for pattern in self.ignore:
+                cmd.extend(['--ignore', pattern])
+            if self.debug:
+                cmd.append('--verbose')
+            if self.has_extra_heartbeats:
+                cmd.append('--extra-heartbeats')
+                stdin = PIPE
+                extra_heartbeats = [self.build_heartbeat(**x) for x in self.extra_heartbeats]
+                extra_heartbeats = json.dumps(extra_heartbeats)
+            else:
+                extra_heartbeats = None
+                stdin = None
+
             log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
             try:
-                if not self.debug:
-                    Popen(cmd)
+                process = Popen(cmd, stdin=stdin, stdout=PIPE, stderr=STDOUT)
+                inp = None
+                if self.has_extra_heartbeats:
+                    inp = "{0}\n".format(extra_heartbeats)
+                    inp = inp.encode('utf-8')
+                output, err = process.communicate(input=inp)
+                output = u(output)
+                retcode = process.poll()
+                if (not retcode or retcode == 102) and not output:
                     self.sent()
                 else:
-                    process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-                    output, err = process.communicate()
-                    output = u(output)
-                    retcode = process.poll()
-                    if (not retcode or retcode == 102) and not output:
-                        self.sent()
-                    if retcode:
-                        log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
-                    if output:
-                        log(ERROR, u('wakatime-core output: {0}').format(output))
+                    update_status_bar('Error')
+                if retcode:
+                    log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
+                if output:
+                    log(ERROR, u('wakatime-core output: {0}').format(output))
             except:
                 log(ERROR, u(sys.exc_info()[1]))
+                update_status_bar('Error')
+
         else:
             log(ERROR, 'Unable to find python binary.')
+            update_status_bar('Error')
 
     def sent(self):
-        sublime.set_timeout(self.set_status_bar, 0)
-        sublime.set_timeout(self.set_last_heartbeat, 0)
+        update_status_bar('OK')
 
-    def set_status_bar(self):
-        if SETTINGS.get('status_bar_message'):
-            self.view.set_status('wakatime', datetime.now().strftime(SETTINGS.get('status_bar_message_fmt')))
 
-    def set_last_heartbeat(self):
-        global LAST_HEARTBEAT
-        LAST_HEARTBEAT = {
-            'file': self.target_file,
-            'time': self.timestamp,
-            'is_write': self.is_write,
-        }
+def download_python():
+    thread = DownloadPython()
+    thread.start()
 
 
 class DownloadPython(threading.Thread):
@@ -491,15 +597,15 @@ class DownloadPython(threading.Thread):
 
 def plugin_loaded():
     global SETTINGS
-    log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
-
     SETTINGS = sublime.load_settings(SETTINGS_FILE)
+
+    log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
+    update_status_bar('Initializing')
 
     if not python_binary():
         log(WARNING, 'Python binary not found.')
         if platform.system() == 'Windows':
-            thread = DownloadPython()
-            thread.start()
+            set_timeout(download_python, 0)
         else:
             sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
             return
@@ -509,7 +615,7 @@ def plugin_loaded():
 
 def after_loaded():
     if not prompt_api_key():
-        sublime.set_timeout(after_loaded, 500)
+        set_timeout(after_loaded, 0.5)
 
 
 # need to call plugin_loaded because only ST3 will auto-call it
