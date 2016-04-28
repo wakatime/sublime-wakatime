@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.1 (2016-04-28)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.0.1.
+- Fix bug which prevented plugin from being sent with extra heartbeats.
+
+
 7.0.0 (2016-04-28)
 ++++++++++++++++++
 
