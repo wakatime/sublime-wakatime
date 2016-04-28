@@ -3,6 +3,22 @@ History
 -------
 
 
+7.0.0 (2016-04-28)
+++++++++++++++++++
+
+- Queue heartbeats and send to wakatime-cli after 4 seconds.
+- Nest settings menu under Package Settings.
+- Upgrade wakatime-cli to v6.0.0.
+- Increase default network timeout to 60 seconds when sending heartbeats to
+  the api.
+- New --extra-heartbeats command line argument for sending a JSON array of
+  extra queued heartbeats to STDIN.
+- Change --entitytype command line argument to --entity-type.
+- No longer allowing --entity-type of url.
+- Support passing an alternate language to cli to be used when a language can
+  not be guessed from the code file.
+
+
 6.0.8 (2016-04-18)
 ++++++++++++++++++
 
