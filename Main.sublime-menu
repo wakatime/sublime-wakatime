@@ -6,24 +6,37 @@
         "children":
         [
             {
-                "caption": "WakaTime",
-                "mnemonic": "W",
-                "id": "wakatime-settings",
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
                 "children":
                 [
                     {
-                        "command": "open_file", "args":
-                        {
-                            "file": "${packages}/WakaTime/WakaTime.sublime-settings"
-                        },
-                        "caption": "Settings – Default"
-                    },
-                    {
-                        "command": "open_file", "args":
-                        {
-                            "file": "${packages}/User/WakaTime.sublime-settings"
-                        },
-                        "caption": "Settings – User"
+                        "caption": "WakaTime",
+                        "mnemonic": "W",
+                        "id": "wakatime-settings",
+                        "children":
+                        [
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/WakaTime/WakaTime.sublime-settings"
+                                },
+                                "caption": "Settings – Default"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/User/WakaTime.sublime-settings"
+                                },
+                                "caption": "Settings – User"
+                            },
+                            {
+                                "command": "wakatime_dashboard",
+                                "args": {},
+                                "caption": "WakaTime Dashboard"
+                            }
+                        ]
                     }
                 ]
             }
