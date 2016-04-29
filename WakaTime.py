@@ -46,7 +46,6 @@ if is_py2:
         if text is None:
             return None
         try:
-            text = str(text)
             return text.decode('utf-8')
         except:
             try:
@@ -318,7 +317,7 @@ def find_python_in_folder(folder, headless=True):
         if not retcode and pattern.search(output):
             return path
     except:
-        log(DEBUG, u('Python Version Output: {0}').format(u(sys.exc_info()[1])))
+        log(DEBUG, u(sys.exc_info()[1]))
 
     if headless:
         path = find_python_in_folder(folder, headless=False)
