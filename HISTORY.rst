@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.2 (2016-04-29)
+++++++++++++++++++
+
+- Prevent implicit unicode decoding from string format when logging output
+  from Python version check.
+
+
 7.0.1 (2016-04-28)
 ++++++++++++++++++
 
