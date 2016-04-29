@@ -386,7 +386,7 @@ def is_view_active(view):
     return False
 
 
-def handle_heartbeat(view, is_write=False):
+def handle_activity(view, is_write=False):
     window = view.window()
     if window is not None:
         entity = view.file_name()
@@ -625,15 +625,15 @@ if ST_VERSION < 3000:
 class WakatimeListener(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
-        handle_heartbeat(view, is_write=True)
+        handle_activity(view, is_write=True)
 
     def on_selection_modified(self, view):
         if is_view_active(view):
-            handle_heartbeat(view)
+            handle_activity(view)
 
     def on_modified(self, view):
         if is_view_active(view):
-            handle_heartbeat(view)
+            handle_activity(view)
 
 
 class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
