@@ -140,6 +140,13 @@ def log(lvl, message, *args, **kwargs):
         set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
 
 
+def resources_folder():
+    if platform.system() == 'Windows':
+        return os.path.join(os.getenv('APPDATA'), 'WakaTime')
+    else:
+        return os.path.join(os.path.expanduser('~'), '.wakatime')
+
+
 def update_status_bar(status):
     """Updates the status bar."""
 
@@ -157,7 +164,7 @@ def update_status_bar(status):
         set_timeout(lambda: update_status_bar(status), 0)
 
 
-def createConfigFile():
+def create_config_file():
     """Creates the .wakatime.cfg INI file in $HOME directory, if it does
     not already exist.
     """
@@ -178,7 +185,7 @@ def createConfigFile():
 def prompt_api_key():
     global SETTINGS
 
-    createConfigFile()
+    create_config_file()
 
     default_key = ''
     try:
@@ -211,7 +218,7 @@ def python_binary():
 
     # look for python in PATH and common install locations
     paths = [
-        os.path.join(os.path.expanduser('~'), '.wakatime', 'python'),
+        os.path.join(resources_folder(), 'python'),
         None,
         '/',
         '/usr/local/bin/',
@@ -572,10 +579,10 @@ class DownloadPython(threading.Thread):
             arch=arch,
         )
 
-        if not os.path.exists(os.path.join(os.path.expanduser('~'), '.wakatime')):
-            os.makedirs(os.path.join(os.path.expanduser('~'), '.wakatime'))
+        if not os.path.exists(resources_folder()):
+            os.makedirs(resources_folder())
 
-        zip_file = os.path.join(os.path.expanduser('~'), '.wakatime', 'python.zip')
+        zip_file = os.path.join(resources_folder(), 'python.zip')
         try:
             urllib.urlretrieve(url, zip_file)
         except AttributeError:
@@ -583,7 +590,7 @@ class DownloadPython(threading.Thread):
 
         log(INFO, 'Extracting Python...')
         with ZipFile(zip_file) as zf:
-            path = os.path.join(os.path.expanduser('~'), '.wakatime', 'python')
+            path = os.path.join(resources_folder(), 'python')
             zf.extractall(path)
 
         try:
