@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.3 (2016-05-16)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.0.2.
+- Prevent popup on Mac when xcode-tools is not installed.
+
+
 7.0.2 (2016-04-29)
 ++++++++++++++++++
 
