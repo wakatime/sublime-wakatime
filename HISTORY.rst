@@ -3,6 +3,14 @@ History
 -------
 
 
+7.0.4 (2016-05-21)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.0.3.
+- Upgrade requests dependency to v2.10.0.
+- Support for SOCKS proxies.
+
+
 7.0.3 (2016-05-16)
 ++++++++++++++++++
 
