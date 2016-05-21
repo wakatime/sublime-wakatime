@@ -47,7 +47,7 @@ Troubleshooting
 
 First, turn on debug mode in your `WakaTime.sublime-settings` file.
 
-![sublime user settings](https://wakatime.com/static/img/ScreenShots/sublime-wakatime-settings-menu.png?v=2)
+![sublime user settings](https://wakatime.com/static/img/ScreenShots/sublime-wakatime-settings-menu.png?v=3)
 
 Add the line: `"debug": true`
 
