@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.6 (2016-06-13)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.0.5.
+- Upgrade pygments to v2.1.3 for better language coverage.
+
+
 7.0.5 (2016-06-08)
 ++++++++++++++++++
 
