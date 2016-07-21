@@ -3,6 +3,12 @@ History
 -------
 
 
+7.0.8 (2016-07-21)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to master version to fix debug logging encoding bug.
+
+
 7.0.7 (2016-07-06)
 ++++++++++++++++++
 
