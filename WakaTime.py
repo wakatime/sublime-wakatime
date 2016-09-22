@@ -54,7 +54,7 @@ if is_py2:
                 try:
                     return unicode(text)
                 except:
-                    return text
+                    return text.decode('utf-8', 'replace')
 
 elif is_py3:
     def u(text):
@@ -71,7 +71,7 @@ elif is_py3:
         try:
             return str(text)
         except:
-            return text
+            return text.decode('utf-8', 'replace')
 
 else:
     raise Exception('Unsupported Python version: {0}.{1}.{2}'.format(
@@ -314,7 +314,7 @@ def find_python_in_folder(folder, headless=True):
         path = os.path.realpath(os.path.join(folder, 'python'))
     if headless:
         path = u(path) + u('w')
-    log(DEBUG, u('Looking for Python at: {0}').format(path))
+    log(DEBUG, u('Looking for Python at: {0}').format(u(path)))
     try:
         process = Popen([path, '--version'], stdout=PIPE, stderr=STDOUT)
         output, err = process.communicate()
