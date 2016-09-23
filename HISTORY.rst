@@ -3,6 +3,12 @@ History
 -------
 
 
+7.0.11 (2016-09-23)
+++++++++++++++++++
+
+- Handle UnicodeDecodeError when when logging. Related to #68.
+
+
 7.0.10 (2016-09-22)
 ++++++++++++++++++
 
