@@ -135,7 +135,10 @@ def log(lvl, message, *args, **kwargs):
             msg = message.format(*args)
         elif len(kwargs) > 0:
             msg = message.format(**kwargs)
-        print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
+        try:
+            print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
+        except UnicodeDecodeError:
+            print(u('[WakaTime] [{lvl}] {msg}').format(lvl=lvl, msg=u(msg)))
     except RuntimeError:
         set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
 
