@@ -1,5 +1,5 @@
 """ ==========================================================
-fFile:        WakaTime.py
+File:        WakaTime.py
 Description: Automatic time tracking for Sublime Text 2 and 3.
 Maintainer:  WakaTime <support@wakatime.com>
 License:     BSD, see LICENSE for more details.
@@ -7,7 +7,7 @@ Website:     https://wakatime.com/
 ==========================================================="""
 
 
-__version__ = '7.0.11'
+__version__ = '7.0.12'
 
 
 import sublime

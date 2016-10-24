@@ -3,6 +3,16 @@ History
 -------
 
 
+7.0.12 (2016-10-24)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.2.0.
+- Exit with status code 104 when api key is missing or invalid. Exit with
+  status code 103 when config file missing or invalid.
+- New WAKATIME_HOME env variable for setting path to config and log files.
+- Improve debug warning message from unsupported dependency parsers.
+
+
 7.0.11 (2016-09-23)
 ++++++++++++++++++
 
