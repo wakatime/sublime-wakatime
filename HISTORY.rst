@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.13 (2016-11-11)
+++++++++++++++++++
+
+- Support old Sublime Text with Python 2.6.
+- Fix bug that prevented reading default api key from existing config file.
+
+
 7.0.12 (2016-10-24)
 ++++++++++++++++++
 
