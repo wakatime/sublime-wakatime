@@ -13,6 +13,7 @@ __version__ = '7.0.12'
 import sublime
 import sublime_plugin
 
+import contextlib
 import json
 import os
 import platform
@@ -20,11 +21,12 @@ import re
 import sys
 import time
 import threading
+import traceback
 import urllib
 import webbrowser
 from datetime import datetime
-from zipfile import ZipFile
 from subprocess import Popen, STDOUT, PIPE
+from zipfile import ZipFile
 try:
     import _winreg as winreg  # py2
 except ImportError:
@@ -304,6 +306,12 @@ def find_python_from_registry(location, reg=None):
         log(DEBUG, 'Could not read registry value "{reg}\\{key}".'.format(
             reg=reg,
             key=location,
+        ))
+    except:
+        log(ERROR, 'Could not read registry value "{reg}\\{key}":\n{exc}'.format(
+            reg=reg,
+            key=location,
+            exc=traceback.format_exc(),
         ))
 
     return val
@@ -592,7 +600,7 @@ class DownloadPython(threading.Thread):
             urllib.request.urlretrieve(url, zip_file)
 
         log(INFO, 'Extracting Python...')
-        with ZipFile(zip_file) as zf:
+        with contextlib.closing(ZipFile(zip_file)) as zf:
             path = os.path.join(resources_folder(), 'python')
             zf.extractall(path)
 
