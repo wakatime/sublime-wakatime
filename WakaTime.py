@@ -56,7 +56,10 @@ if is_py2:
                 try:
                     return unicode(text)
                 except:
-                    return text.decode('utf-8', 'replace')
+                    try:
+                        return text.decode('utf-8', 'replace')
+                    except AttributeError:
+                        return unicode(str(text))
 
 elif is_py3:
     def u(text):
