@@ -47,6 +47,8 @@ if is_py2:
     def u(text):
         if text is None:
             return None
+        if isinstance(text, unicode):
+            return text
         try:
             return text.decode('utf-8')
         except:
@@ -58,8 +60,11 @@ if is_py2:
                 except:
                     try:
                         return text.decode('utf-8', 'replace')
-                    except AttributeError:
-                        return unicode(str(text))
+                    except:
+                        try:
+                            return unicode(str(text))
+                        except:
+                            return unicode('')
 
 elif is_py3:
     def u(text):
