@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.14 (2017-02-08)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.2.1.
+- Allow boolean or list of regex patterns for hidefilenames config setting.
+
+
 7.0.13 (2016-11-11)
 ++++++++++++++++++
 
