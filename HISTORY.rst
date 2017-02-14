@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.15 (2017-02-13)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v6.2.2.
+- Upgrade pygments library to v2.2.0 for improved language detection.
+
+
 7.0.14 (2017-02-08)
 ++++++++++++++++++
 
