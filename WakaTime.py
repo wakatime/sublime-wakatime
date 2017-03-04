@@ -537,7 +537,7 @@ class SendHeartbeatsThread(threading.Thread):
             if heartbeat.get('cursorpos') is not None:
                 cmd.extend(['--cursorpos', heartbeat['cursorpos']])
             for pattern in self.ignore:
-                cmd.extend(['--ignore', pattern])
+                cmd.extend(['--exclude', pattern])
             if self.debug:
                 cmd.append('--verbose')
             if self.has_extra_heartbeats:
