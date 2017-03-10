@@ -482,6 +482,7 @@ class SendHeartbeatsThread(threading.Thread):
         self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
+        self.hidefilenames = SETTINGS.get('hidefilenames')
 
         self.heartbeat = heartbeat
         self.has_extra_heartbeats = False
@@ -537,9 +538,11 @@ class SendHeartbeatsThread(threading.Thread):
             if heartbeat.get('cursorpos') is not None:
                 cmd.extend(['--cursorpos', heartbeat['cursorpos']])
             for pattern in self.ignore:
-                cmd.extend(['--ignore', pattern])
+                cmd.extend(['--exclude', pattern])
             if self.debug:
                 cmd.append('--verbose')
+            if self.hidefilenames:
+                cmd.append('--hidefilenames')
             if self.has_extra_heartbeats:
                 cmd.append('--extra-heartbeats')
                 stdin = PIPE

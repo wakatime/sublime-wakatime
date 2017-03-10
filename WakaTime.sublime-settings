@@ -19,5 +19,8 @@
     "status_bar_message": true,
     
     // Status bar message format.
-    "status_bar_message_fmt": "WakaTime {status} %I:%M %p"
+    "status_bar_message_fmt": "WakaTime {status} %I:%M %p",
+
+    // Hide filenames
+    "hidefilenames": false
 }
