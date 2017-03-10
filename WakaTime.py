@@ -190,7 +190,6 @@ def create_config_file():
             with open(configFile, 'w') as fh:
                 fh.write("[settings]\n")
                 fh.write("debug = false\n")
-                fh.write("hidefilenames = false\n")
         except IOError:
             pass
 
@@ -483,6 +482,7 @@ class SendHeartbeatsThread(threading.Thread):
         self.api_key = SETTINGS.get('api_key', '')
         self.ignore = SETTINGS.get('ignore', [])
         self.hidefilenames = SETTINGS.get('hidefilenames')
+        self.proxy = SETTINGS.get('proxy')
 
         self.heartbeat = heartbeat
         self.has_extra_heartbeats = False
@@ -543,6 +543,8 @@ class SendHeartbeatsThread(threading.Thread):
                 cmd.append('--verbose')
             if self.hidefilenames:
                 cmd.append('--hidefilenames')
+            if self.proxy:
+                cmd.extend(['--proxy', self.proxy])
             if self.has_extra_heartbeats:
                 cmd.append('--extra-heartbeats')
                 stdin = PIPE
