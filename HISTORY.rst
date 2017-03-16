@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.18 (2017-03-16)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v8.0.0.
+- No longer creating ~/.wakatime.cfg file, since only using Sublime settings.
+
+
 7.0.17 (2017-03-01)
 ++++++++++++++++++
 
