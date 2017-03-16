@@ -177,27 +177,11 @@ def update_status_bar(status):
         set_timeout(lambda: update_status_bar(status), 0)
 
 
-def create_config_file():
-    """Creates the .wakatime.cfg INI file in $HOME directory, if it does
-    not already exist.
-    """
-    configFile = os.path.join(os.path.expanduser('~'), '.wakatime.cfg')
-    try:
-        with open(configFile) as fh:
-            pass
-    except IOError:
-        try:
-            with open(configFile, 'w') as fh:
-                fh.write("[settings]\n")
-                fh.write("debug = false\n")
-        except IOError:
-            pass
-
-
 def prompt_api_key():
     global SETTINGS
 
-    create_config_file()
+    if SETTINGS.get('api_key'):
+        return True
 
     default_key = ''
     try:
@@ -208,20 +192,17 @@ def prompt_api_key():
     except:
         pass
 
-    if SETTINGS.get('api_key'):
-        return True
-    else:
+    window = sublime.active_window()
+    if window:
         def got_key(text):
             if text:
                 SETTINGS.set('api_key', str(text))
                 sublime.save_settings(SETTINGS_FILE)
-        window = sublime.active_window()
-        if window:
-            window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', default_key, got_key, None, None)
-            return True
-        else:
-            log(ERROR, 'Could not prompt for api key because no window found.')
-    return False
+        window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', default_key, got_key, None, None)
+        return True
+    else:
+        log(ERROR, 'Could not prompt for api key because no window found.')
+        return False
 
 
 def python_binary():
