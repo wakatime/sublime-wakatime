@@ -19,9 +19,7 @@ Installation
 
 3. Enter your [api key](https://wakatime.com/settings#apikey), then press `enter`.
 
-4. Use Sublime and your time will be tracked for you automatically.
-
-5. Visit https://wakatime.com/dashboard to see your logged time.
+4. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
 
 Screen Shots
