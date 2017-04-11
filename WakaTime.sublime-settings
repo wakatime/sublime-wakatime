@@ -6,21 +6,21 @@
     // Your api key from https://wakatime.com/#apikey
     // Set this in your User specific WakaTime.sublime-settings file.
     "api_key": "",
-    
+
     // Debug mode. Set to true for verbose logging. Defaults to false.
     "debug": false,
 
     // Proxy with format https://user:pass@host:port or socks5://user:pass@host:port or domain\\user:pass.
     "proxy": "",
-    
+
     // Ignore files; Files (including absolute paths) that match one of these
     // POSIX regular expressions will not be logged.
-    "ignore": ["^/tmp/", "^/etc/", "^/var/", "COMMIT_EDITMSG$", "PULLREQ_EDITMSG$", "MERGE_MSG$", "TAG_EDITMSG$"],
-    
+    "ignore": ["^/tmp/", "^/etc/", "^/var/(?!www/).*", "COMMIT_EDITMSG$", "PULLREQ_EDITMSG$", "MERGE_MSG$", "TAG_EDITMSG$"],
+
     // Status bar message. Set to false to hide status bar message.
     // Defaults to true.
     "status_bar_message": true,
-    
+
     // Status bar message format.
     "status_bar_message_fmt": "WakaTime {status} %I:%M %p",
 
