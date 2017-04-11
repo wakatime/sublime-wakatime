@@ -9,17 +9,15 @@ Installation
 
 1. Install [Package Control](https://packagecontrol.io/installation).
 
-2. Using [Package Control](https://packagecontrol.io/docs/usage):
+2. In Sublime, press `ctrl+shift+p`(Windows, Linux) or `cmd+shift+p`(OS X).
 
-  a) Inside Sublime, press `ctrl+shift+p`(Windows, Linux) or `cmd+shift+p`(OS X).
+3. Type `install`, then press `enter` with `Package Control: Install Package` selected.
 
-  b) Type `install`, then press `enter` with `Package Control: Install Package` selected.
+4. Type `wakatime`, then press `enter` with the `WakaTime` plugin selected.
 
-  c) Type `wakatime`, then press `enter` with the `WakaTime` plugin selected.
+5. Enter your [api key](https://wakatime.com/settings#apikey), then press `enter`.
 
-3. Enter your [api key](https://wakatime.com/settings#apikey), then press `enter`.
-
-4. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
+6. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
 
 Screen Shots
