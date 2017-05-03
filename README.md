@@ -33,7 +33,7 @@ In Sublime Text 2, if you get a warning message:
 
     A plugin (WakaTime) may be making Sublime Text unresponsive by taking too long (0.017332s) in its on_modified callback.
 
-To fix this, go to `Preferences > Settings - User` then add the following setting:
+To fix this, go to `Preferences → Settings - User` then add the following setting:
 
 `"detect_slow_plugins": false`
 
