@@ -3,6 +3,18 @@ History
 -------
 
 
+7.0.21 (2017-05-24)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v8.0.2.
+- Only treat proxy string as NTLM proxy after unable to connect with HTTPS and
+  SOCKS proxy.
+- Support running automated tests on Linux, OS X, and Windows.
+- Ability to disable SSL cert verification. wakatime/wakatime#90
+- Disable line count stats for files larger than 2MB to improve performance.
+- Print error saying Python needs upgrading when requests can't be imported.
+
+
 7.0.20 (2017-04-10)
 ++++++++++++++++++
 
