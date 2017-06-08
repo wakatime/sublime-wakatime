@@ -3,6 +3,13 @@ History
 -------
 
 
+7.0.22 (2017-06-08)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v8.0.3.
+- Improve Matlab language detection.
+
+
 7.0.21 (2017-05-24)
 ++++++++++++++++++
 
