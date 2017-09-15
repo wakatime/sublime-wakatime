@@ -17,6 +17,9 @@
     // POSIX regular expressions will not be logged.
     "ignore": ["^/tmp/", "^/etc/", "^/var/(?!www/).*", "COMMIT_EDITMSG$", "PULLREQ_EDITMSG$", "MERGE_MSG$", "TAG_EDITMSG$"],
 
+    // Include files; Files (including absolute paths) that match one of these
+    "include": [".*"],
+
     // Status bar message. Set to false to hide status bar message.
     // Defaults to true.
     "status_bar_message": true,
