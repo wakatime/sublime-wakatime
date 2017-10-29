@@ -6,7 +6,8 @@ History
 7.0.23 (2017-09-14)
 ++++++++++++++++++
 
-- Add "include" setting to bypass ignored files. #89
+- Add "include" setting to bypass ignored files.
+  `#89 <https://github.com/wakatime/sublime-wakatime/issues/89>`_
 
 
 7.0.22 (2017-06-08)
@@ -23,7 +24,8 @@ History
 - Only treat proxy string as NTLM proxy after unable to connect with HTTPS and
   SOCKS proxy.
 - Support running automated tests on Linux, OS X, and Windows.
-- Ability to disable SSL cert verification. wakatime/wakatime#90
+- Ability to disable SSL cert verification.
+  `wakatime#90 <https://github.com/wakatime/wakatime/issues/90>`_
 - Disable line count stats for files larger than 2MB to improve performance.
 - Print error saying Python needs upgrading when requests can't be imported.
 
@@ -93,13 +95,15 @@ History
 7.0.11 (2016-09-23)
 ++++++++++++++++++
 
-- Handle UnicodeDecodeError when when logging. Related to #68.
+- Handle UnicodeDecodeError when when logging.
+  `#68 <https://github.com/wakatime/sublime-wakatime/issues/68>`_
 
 
 7.0.10 (2016-09-22)
 ++++++++++++++++++
 
-- Handle UnicodeDecodeError when looking for python. Fixes #68.
+- Handle UnicodeDecodeError when looking for python.
+  `#68 <https://github.com/wakatime/sublime-wakatime/issues/68>`_
 - Upgrade wakatime-cli to v6.0.9.
 
 
