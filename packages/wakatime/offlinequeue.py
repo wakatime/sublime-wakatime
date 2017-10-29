@@ -27,14 +27,14 @@ log = logging.getLogger('WakaTime')
 
 
 class Queue(object):
-    db_file = os.path.join(os.path.expanduser('~'), '.wakatime.db')
+    DB_FILE = os.path.join(
+        os.environ.get('WAKATIME_HOME', os.path.expanduser('~')),
+        '.wakatime.db',
+    )
     table_name = 'heartbeat_1'
 
-    def get_db_file(self):
-        return self.db_file
-
     def connect(self):
-        conn = sqlite3.connect(self.get_db_file(), isolation_level=None)
+        conn = sqlite3.connect(self.DB_FILE, isolation_level=None)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS {0} (
             entity text,

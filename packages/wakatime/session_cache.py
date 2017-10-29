@@ -30,7 +30,10 @@ log = logging.getLogger('WakaTime')
 
 
 class SessionCache(object):
-    DB_FILE = os.path.join(os.path.expanduser('~'), '.wakatime.db')
+    DB_FILE = os.path.join(
+        os.environ.get('WAKATIME_HOME', os.path.expanduser('~')),
+        '.wakatime.db',
+    )
 
     def connect(self):
         conn = sqlite3.connect(self.DB_FILE, isolation_level=None)
