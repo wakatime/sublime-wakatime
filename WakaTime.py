@@ -465,6 +465,7 @@ class SendHeartbeatsThread(threading.Thread):
         self.include = SETTINGS.get('include', [])
         self.hidefilenames = SETTINGS.get('hidefilenames')
         self.proxy = SETTINGS.get('proxy')
+        self.python_binary = SETTINGS.get('python_binary')
 
         self.heartbeat = heartbeat
         self.has_extra_heartbeats = False
@@ -501,11 +502,14 @@ class SendHeartbeatsThread(threading.Thread):
         return heartbeat
 
     def send_heartbeats(self):
-        if python_binary():
+        python = self.python_binary
+        if not python or not python.strip():
+            python = python_binary()
+        if python:
             heartbeat = self.build_heartbeat(**self.heartbeat)
             ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
             cmd = [
-                python_binary(),
+                python,
                 API_CLIENT,
                 '--entity', heartbeat['entity'],
                 '--time', str('%f' % heartbeat['timestamp']),

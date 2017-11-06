@@ -29,5 +29,8 @@
     "status_bar_message_fmt": "WakaTime {status} %I:%M %p",
 
     // Obfuscate file paths when sending to API. Your dashboard will no longer display coding activity per file.
-    "hidefilenames": false
+    "hidefilenames": false,
+
+    // Python binary location. Uses python from your PATH by default.
+    "python_binary": ""
 }
