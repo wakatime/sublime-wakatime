@@ -3,6 +3,16 @@ History
 -------
 
 
+7.0.25 (2017-11-05)
+++++++++++++++++++
+
+- Ability to override python binary location in sublime-settings file.
+  `#78 <https://github.com/wakatime/sublime-wakatime/issues/78>`_
+- Upgrade wakatime-cli to v9.0.0.
+- Detect project and branch names from git submodules.
+  `wakatime/#105 <https://github.com/wakatime/wakatime/issues/105>`_
+
+
 7.0.24 (2017-10-29)
 ++++++++++++++++++
 
