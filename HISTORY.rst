@@ -3,6 +3,14 @@ History
 -------
 
 
+7.0.26 (2017-11-07)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v9.0.1.
+- Fix bug causing 401 response when hidefilenames is enabled.
+  `#wakatime/106 <https://github.com/wakatime/wakatime/issues/106>`_
+
+
 7.0.25 (2017-11-05)
 ++++++++++++++++++
 
