@@ -3,12 +3,20 @@ History
 -------
 
 
+8.0.0 (2017-11-08)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.0.0.
+- Upload multiple heartbeats to bulk endpoint for improved network performance.
+  `wakatime#107 <https://github.com/wakatime/wakatime/issues/107>`_
+
+
 7.0.26 (2017-11-07)
 ++++++++++++++++++
 
 - Upgrade wakatime-cli to v9.0.1.
 - Fix bug causing 401 response when hidefilenames is enabled.
-  `#wakatime/106 <https://github.com/wakatime/wakatime/issues/106>`_
+  `wakatime#106 <https://github.com/wakatime/wakatime/issues/106>`_
 
 
 7.0.25 (2017-11-05)
@@ -18,7 +26,7 @@ History
   `#78 <https://github.com/wakatime/sublime-wakatime/issues/78>`_
 - Upgrade wakatime-cli to v9.0.0.
 - Detect project and branch names from git submodules.
-  `wakatime/#105 <https://github.com/wakatime/wakatime/issues/105>`_
+  `wakatime#105 <https://github.com/wakatime/wakatime/issues/105>`_
 
 
 7.0.24 (2017-10-29)
@@ -31,7 +39,7 @@ History
 - Upgrade requests to v2.18.4.
 - Upgrade tzlocal to v1.4.
 - Use WAKATIME_HOME env variable for offline and session caching.
-  `wakatime/#102 <https://github.com/wakatime/wakatime/issues/102>`_
+  `wakatime#102 <https://github.com/wakatime/wakatime/issues/102>`_
 
 
 7.0.23 (2017-09-14)
