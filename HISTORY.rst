@@ -3,6 +3,14 @@ History
 -------
 
 
+8.0.3 (2017-11-15)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.0.3.
+- Support saving unicode heartbeats when working offline.
+  `wakatime#112 <https://github.com/wakatime/wakatime/issues/112>`_
+
+
 8.0.2 (2017-11-15)
 ++++++++++++++++++
 
