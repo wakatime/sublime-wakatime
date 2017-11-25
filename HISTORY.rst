@@ -3,6 +3,13 @@ History
 -------
 
 
+8.0.5 (2017-11-24)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.0.5.
+- Fix bug that caused heartbeats to be cached locally instead of sent to API.
+
+
 8.0.4 (2017-11-23)
 ++++++++++++++++++
 
