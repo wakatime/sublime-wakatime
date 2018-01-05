@@ -3,6 +3,14 @@ History
 -------
 
 
+8.0.6 (2018-01-04)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.1.0.
+- Ability to only track folders containing a .wakatime-project file using new
+  include_only_with_project_file argument and config option.
+
+
 8.0.5 (2017-11-24)
 ++++++++++++++++++
 
