@@ -305,13 +305,15 @@ def find_python_from_registry(location, reg=None):
     return val
 
 
-def find_python_in_folder(folder, headless=True):
+def find_python_in_folder(folder, python3=True, headless=True):
     pattern = re.compile(r'\d+\.\d+')
 
     path = 'python'
-    if folder is not None:
+    if folder:
         path = os.path.realpath(os.path.join(folder, 'python'))
-    if headless:
+    if python3:
+        path = u(path) + u('3')
+    elif headless:
         path = u(path) + u('w')
     log(DEBUG, u('Looking for Python at: {0}').format(u(path)))
     try:
@@ -325,9 +327,13 @@ def find_python_in_folder(folder, headless=True):
     except:
         log(DEBUG, u(sys.exc_info()[1]))
 
-    if headless:
-        path = find_python_in_folder(folder, headless=False)
-        if path is not None:
+    if python3:
+        path = find_python_in_folder(folder, python3=False, headless=headless)
+        if path:
+            return path
+    elif headless:
+        path = find_python_in_folder(folder, python3=python3, headless=False)
+        if path:
             return path
 
     return None
