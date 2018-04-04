@@ -3,6 +3,13 @@ History
 -------
 
 
+8.1.0 (2018-04-03)
+++++++++++++++++++
+
+- Prefer Python3 over Python2 when running wakatime-cli core.
+- Improve detection of Python3 on Ubuntu 17.10 platforms.
+
+
 8.0.8 (2018-03-15)
 ++++++++++++++++++
 
