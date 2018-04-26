@@ -3,6 +3,16 @@ History
 -------
 
 
+8.1.1 (2018-04-26)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.2.1.
+- Force forward slash for file paths.
+- New --category argument.
+- New --exclude-unknown-project argument and corresponding config setting.
+- Support for project detection from git worktree folders.
+
+
 8.1.0 (2018-04-03)
 ++++++++++++++++++
 
