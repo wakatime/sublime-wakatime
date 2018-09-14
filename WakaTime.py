@@ -542,19 +542,16 @@ class SendHeartbeatsThread(threading.Thread):
             if self.has_extra_heartbeats:
                 cmd.append('--extra-heartbeats')
                 stdin = PIPE
-                extra_heartbeats = [self.build_heartbeat(**x) for x in self.extra_heartbeats]
-                extra_heartbeats = json.dumps(extra_heartbeats)
+                extra_heartbeats = json.dumps([self.build_heartbeat(**x) for x in self.extra_heartbeats])
+                inp = "{0}\n".format(extra_heartbeats).encode('utf-8')
             else:
                 extra_heartbeats = None
                 stdin = None
+                inp = None
 
             log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
             try:
                 process = Popen(cmd, stdin=stdin, stdout=PIPE, stderr=STDOUT)
-                inp = None
-                if self.has_extra_heartbeats:
-                    inp = "{0}\n".format(extra_heartbeats)
-                    inp = inp.encode('utf-8')
                 output, err = process.communicate(input=inp)
                 output = u(output)
                 retcode = process.poll()
