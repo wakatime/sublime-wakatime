@@ -3,6 +3,17 @@ History
 -------
 
 
+8.2.0 (2018-09-30)
+++++++++++++++++++
+
+- Prevent opening cmd window on Windows when running wakatime-cli.
+  `#91 <https://github.com/wakatime/sublime-wakatime/issues/91>`_
+- Upgrade wakatime-cli to v10.3.0.
+- Re-enable detecting projects from Subversion folder on Windows platform.
+- Prevent opening cmd window on Windows when detecting project from Subversion.
+- Run tests on Windows using Appveyor.
+
+
 8.1.2 (2018-09-20)
 ++++++++++++++++++
 
