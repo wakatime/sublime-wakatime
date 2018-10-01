@@ -18,6 +18,7 @@ import json
 import os
 import platform
 import re
+import subprocess
 import sys
 import time
 import threading
@@ -25,7 +26,7 @@ import traceback
 import urllib
 import webbrowser
 from datetime import datetime
-from subprocess import Popen, STDOUT, PIPE
+from subprocess import STDOUT, PIPE
 from zipfile import ZipFile
 try:
     import _winreg as winreg  # py2
@@ -42,6 +43,8 @@ except ImportError:
 
 is_py2 = (sys.version_info[0] == 2)
 is_py3 = (sys.version_info[0] == 3)
+is_win = platform.system() == 'Windows'
+
 
 if is_py2:
     def u(text):
@@ -89,6 +92,21 @@ else:
         sys.version_info[1],
         sys.version_info[2],
     ))
+
+
+class Popen(subprocess.Popen):
+    """Patched Popen to prevent opening cmd window on Windows platform."""
+
+    def __init__(self, *args, **kwargs):
+        startupinfo = kwargs.get('startupinfo')
+        if is_win or True:
+            try:
+                startupinfo = startupinfo or subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            except AttributeError:
+                pass
+        kwargs['startupinfo'] = startupinfo
+        super(Popen, self).__init__(*args, **kwargs)
 
 
 # globals
