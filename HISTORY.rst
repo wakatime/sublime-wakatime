@@ -3,6 +3,15 @@ History
 -------
 
 
+8.3.0 (2018-10-03)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.4.0.
+- Support logging coding activity to remote network drive files on Windows
+  platform by detecting UNC path from drive letter.
+  `wakatime#72 <https://github.com/wakatime/wakatime/issues/72>`_
+
+
 8.2.0 (2018-09-30)
 ++++++++++++++++++
 
