@@ -3,6 +3,13 @@ History
 -------
 
 
+8.3.1 (2018-10-05)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v10.4.1.
+- Send 50 offline heartbeats to API per request with 1 second delay in between.
+
+
 8.3.0 (2018-10-03)
 ++++++++++++++++++
 
