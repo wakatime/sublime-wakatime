@@ -110,7 +110,6 @@ class Popen(subprocess.Popen):
 
 
 # globals
-HEARTBEAT_FREQUENCY = 2
 ST_VERSION = int(sublime.version())
 PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
 API_CLIENT = os.path.join(PLUGIN_DIR, 'packages', 'wakatime', 'cli.py')
@@ -121,8 +120,11 @@ LAST_HEARTBEAT = {
     'file': None,
     'is_write': False,
 }
+LAST_HEARTBEAT_SENT_AT = 0
 PYTHON_LOCATION = None
 HEARTBEATS = queue.Queue()
+HEARTBEAT_FREQUENCY = 2  # minutes between logging heartbeat when editing same file
+SEND_BUFFER_SECONDS = 30  # seconds between sending buffered heartbeats to API
 
 
 # Log Levels
@@ -451,11 +453,18 @@ def append_heartbeat(entity, timestamp, is_write, view, project, folders):
     }
 
     # process the queue of heartbeats in the future
-    seconds = 4
-    set_timeout(process_queue, seconds)
+    set_timeout(lambda: process_queue(timestamp), SEND_BUFFER_SECONDS)
 
 
-def process_queue():
+def process_queue(timestamp):
+    global LAST_HEARTBEAT_SENT_AT
+
+    # Prevent sending heartbeats more often than SEND_BUFFER_SECONDS
+    now = int(time.time())
+    if timestamp != LAST_HEARTBEAT['time'] and LAST_HEARTBEAT_SENT_AT > now - SEND_BUFFER_SECONDS:
+        return
+    LAST_HEARTBEAT_SENT_AT = now
+
     try:
         heartbeat = HEARTBEATS.get_nowait()
     except queue.Empty:
