@@ -3,6 +3,12 @@ History
 -------
 
 
+8.3.2 (2018-10-06)
+++++++++++++++++++
+
+- Send buffered heartbeats to API every 30 seconds.
+
+
 8.3.1 (2018-10-05)
 ++++++++++++++++++
 
