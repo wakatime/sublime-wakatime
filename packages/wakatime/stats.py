@@ -25,6 +25,7 @@ from .packages.pygments.lexers import (
     _fn_matches,
     basename,
     ClassNotFound,
+    CppLexer,
     find_lexer_class,
     get_lexer_by_name,
 )
@@ -168,6 +169,10 @@ def get_language_from_extension(file_name):
     """
 
     filepart, extension = os.path.splitext(file_name)
+    pathpart, filename = os.path.split(file_name)
+
+    if filename == 'go.mod':
+        return 'Go'
 
     if re.match(r'\.h.*$', extension, re.IGNORECASE) or re.match(r'\.c.*$', extension, re.IGNORECASE):
 
@@ -181,8 +186,12 @@ def get_language_from_extension(file_name):
             return 'Objective-C++'
 
         available_extensions = extensions_in_same_folder(file_name)
-        if '.cpp' in available_extensions:
-            return 'C++'
+
+        for ext in CppLexer.filenames:
+            ext = ext.lstrip('*')
+            if ext in available_extensions:
+                return 'C++'
+
         if '.c' in available_extensions:
             return 'C'
 
