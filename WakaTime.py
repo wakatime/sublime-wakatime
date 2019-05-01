@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """ ==========================================================
 File:        WakaTime.py
 Description: Automatic time tracking for Sublime Text 2 and 3.
@@ -25,7 +26,7 @@ import threading
 import traceback
 import urllib
 import webbrowser
-from datetime import datetime
+from contextlib import closing
 from subprocess import STDOUT, PIPE
 from zipfile import ZipFile
 try:
@@ -40,6 +41,11 @@ try:
 except ImportError:
     import queue  # py3
 
+try:
+    import urllib2
+except ImportError:
+    import urllib.request as urllib2
+
 
 is_py2 = (sys.version_info[0] == 2)
 is_py3 = (sys.version_info[0] == 3)
@@ -47,6 +53,8 @@ is_win = platform.system() == 'Windows'
 
 
 if is_py2:
+    STATUS_BAR_PREFIX = 'WakaTime'
+
     def u(text):
         if text is None:
             return None
@@ -70,6 +78,8 @@ if is_py2:
                             return unicode('')
 
 elif is_py3:
+    STATUS_BAR_PREFIX = '🕘'
+
     def u(text):
         if text is None:
             return None
@@ -121,6 +131,9 @@ LAST_HEARTBEAT = {
     'is_write': False,
 }
 LAST_HEARTBEAT_SENT_AT = 0
+LAST_FETCH_TODAY_CODING_TIME = 0
+FETCH_TODAY_DEBOUNCE_COUNTER = 0
+FETCH_TODAY_DEBOUNCE_SECONDS = 60
 PYTHON_LOCATION = None
 HEARTBEATS = queue.Queue()
 HEARTBEAT_FREQUENCY = 2  # minutes between logging heartbeat when editing same file
@@ -180,21 +193,59 @@ def resources_folder():
         return os.path.join(os.path.expanduser('~'), '.wakatime')
 
 
-def update_status_bar(status):
+def update_status_bar(status=None, debounced=False, msg=None):
     """Updates the status bar."""
+    global LAST_FETCH_TODAY_CODING_TIME, FETCH_TODAY_DEBOUNCE_COUNTER
 
     try:
-        if SETTINGS.get('status_bar_message'):
-            msg = datetime.now().strftime(SETTINGS.get('status_bar_message_fmt'))
-            if '{status}' in msg:
-                msg = msg.format(status=status)
+        if not msg and SETTINGS.get('status_bar_message') is not False and SETTINGS.get('status_bar_enabled'):
+            if SETTINGS.get('status_bar_coding_activity') and status == 'OK':
+                if debounced:
+                    FETCH_TODAY_DEBOUNCE_COUNTER -= 1
+                if debounced or not LAST_FETCH_TODAY_CODING_TIME:
+                    now = int(time.time())
+                    if LAST_FETCH_TODAY_CODING_TIME and (FETCH_TODAY_DEBOUNCE_COUNTER > 0 or LAST_FETCH_TODAY_CODING_TIME > now - FETCH_TODAY_DEBOUNCE_SECONDS):
+                        return
+                    LAST_FETCH_TODAY_CODING_TIME = now
+                    FetchStatusBarCodingTime().start()
+                    return
+                else:
+                    FETCH_TODAY_DEBOUNCE_COUNTER += 1
+                    set_timeout(lambda: update_status_bar(status, debounced=True), FETCH_TODAY_DEBOUNCE_SECONDS)
+                    return
+            else:
+                msg = '{prefix}: {status}'.format(prefix=STATUS_BAR_PREFIX, status=status)
 
+        if msg:
             active_window = sublime.active_window()
             if active_window:
                 for view in active_window.views():
                     view.set_status('wakatime', msg)
+
     except RuntimeError:
-        set_timeout(lambda: update_status_bar(status), 0)
+        set_timeout(lambda: update_status_bar(status=status, debounced=debounced, msg=msg), 0)
+
+
+class FetchStatusBarCodingTime(threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+        self.api_key = SETTINGS.get('api_key', '')
+
+    def run(self):
+        if not self.api_key:
+            log(DEBUG, 'Missing WakaTime API key.')
+            return
+
+        url = 'https://wakatime.com/api/v1/users/current/summaries?start=today&end=today&api_key={}'.format(self.api_key)
+        try:
+            with closing(urllib2.urlopen(url)) as response:
+                grand_total_text = json.loads(u(response.read()))['data'][0]['grand_total']['text']
+                msg = '{} Today: {}'.format(STATUS_BAR_PREFIX, grand_total_text)
+                update_status_bar(msg=msg)
+        except:
+            pass
 
 
 def prompt_api_key():
@@ -648,7 +699,7 @@ def plugin_loaded():
     SETTINGS = sublime.load_settings(SETTINGS_FILE)
 
     log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
-    update_status_bar('Initializing')
+    update_status_bar('Initializing...')
 
     if not python_binary():
         log(WARNING, 'Python binary not found.')
@@ -664,6 +715,7 @@ def plugin_loaded():
 def after_loaded():
     if not prompt_api_key():
         set_timeout(after_loaded, 0.5)
+    update_status_bar('OK')
 
 
 # need to call plugin_loaded because only ST3 will auto-call it

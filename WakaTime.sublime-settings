@@ -21,12 +21,13 @@
     // POSIX regular expressions will bypass your ignore setting.
     "include": [".*"],
 
-    // Status bar message. Set to false to hide status bar message.
-    // Defaults to true.
-    "status_bar_message": true,
+    // Status bar for surfacing errors and displaying today's coding time. Set
+    // to false to hide. Defaults to true.
+    "status_bar_enabled": true,
 
-    // Status bar message format.
-    "status_bar_message_fmt": "WakaTime {status} %I:%M %p",
+    // Show today's coding activity in WakaTime status bar item.
+    // Defaults to true.
+    "status_bar_coding_activity": true,
 
     // Obfuscate file paths when sending to API. Your dashboard will no longer display coding activity per file.
     "hidefilenames": false,
