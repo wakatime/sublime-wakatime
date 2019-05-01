@@ -138,6 +138,7 @@ PYTHON_LOCATION = None
 HEARTBEATS = queue.Queue()
 HEARTBEAT_FREQUENCY = 2  # minutes between logging heartbeat when editing same file
 SEND_BUFFER_SECONDS = 30  # seconds between sending buffered heartbeats to API
+API_SUMMARIES_URL = 'https://api.wakatime.com/api/v1/users/current/summaries?start=today&end=today&api_key={}'
 
 
 # Log Levels
@@ -238,7 +239,7 @@ class FetchStatusBarCodingTime(threading.Thread):
             log(DEBUG, 'Missing WakaTime API key.')
             return
 
-        url = 'https://wakatime.com/api/v1/users/current/summaries?start=today&end=today&api_key={}'.format(self.api_key)
+        url = API_SUMMARIES_URL.format(self.api_key)
         try:
             with closing(urllib2.urlopen(url)) as response:
                 grand_total_text = json.loads(u(response.read()))['data'][0]['grand_total']['text']
