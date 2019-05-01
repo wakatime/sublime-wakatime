@@ -3,6 +3,12 @@ History
 -------
 
 
+8.4.1 (2019-05-01)
+++++++++++++++++++
+
+- Use api subdomain for fetching today's coding activity.
+
+
 8.4.0 (2019-05-01)
 ++++++++++++++++++
 
