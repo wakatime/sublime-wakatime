@@ -3,6 +3,14 @@ History
 -------
 
 
+8.4.2 (2019-05-07)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v11.0.0.
+- Rename largument --show-time-today to --today.
+- New argument --show-time-today for printing Today's coding time.
+
+
 8.4.1 (2019-05-01)
 ++++++++++++++++++
 
