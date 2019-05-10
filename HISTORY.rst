@@ -3,11 +3,18 @@ History
 -------
 
 
+8.5.0 (2019-05-10)
+++++++++++++++++++
+
+- Remove clock icon from status bar.
+- Use wakatime-cli to fetch status bar coding time.
+
+
 8.4.2 (2019-05-07)
 ++++++++++++++++++
 
 - Upgrade wakatime-cli to v11.0.0.
-- Rename largument --show-time-today to --today.
+- Rename argument --show-time-today to --today.
 - New argument --show-time-today for printing Today's coding time.
 
 
