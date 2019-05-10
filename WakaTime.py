@@ -53,8 +53,6 @@ is_win = platform.system() == 'Windows'
 
 
 if is_py2:
-    STATUS_BAR_PREFIX = 'WakaTime'
-
     def u(text):
         if text is None:
             return None
@@ -78,8 +76,6 @@ if is_py2:
                             return unicode('')
 
 elif is_py3:
-    STATUS_BAR_PREFIX = '🕘'
-
     def u(text):
         if text is None:
             return None
@@ -215,7 +211,7 @@ def update_status_bar(status=None, debounced=False, msg=None):
                     set_timeout(lambda: update_status_bar(status, debounced=True), FETCH_TODAY_DEBOUNCE_SECONDS)
                     return
             else:
-                msg = '{prefix}: {status}'.format(prefix=STATUS_BAR_PREFIX, status=status)
+                msg = 'WakaTime: {status}'.format(status=status)
 
         if msg:
             active_window = sublime.active_window()
@@ -243,7 +239,7 @@ class FetchStatusBarCodingTime(threading.Thread):
         try:
             with closing(urllib2.urlopen(url)) as response:
                 grand_total_text = json.loads(u(response.read()))['data'][0]['grand_total']['text']
-                msg = '{} Today: {}'.format(STATUS_BAR_PREFIX, grand_total_text)
+                msg = 'Today: {0}'.format(grand_total_text)
                 update_status_bar(msg=msg)
         except:
             pass
