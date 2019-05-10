@@ -26,7 +26,6 @@ import threading
 import traceback
 import urllib
 import webbrowser
-from contextlib import closing
 from subprocess import STDOUT, PIPE
 from zipfile import ZipFile
 try:
@@ -40,11 +39,6 @@ try:
     import Queue as queue  # py2
 except ImportError:
     import queue  # py3
-
-try:
-    import urllib2
-except ImportError:
-    import urllib.request as urllib2
 
 
 is_py2 = (sys.version_info[0] == 2)
@@ -134,7 +128,6 @@ PYTHON_LOCATION = None
 HEARTBEATS = queue.Queue()
 HEARTBEAT_FREQUENCY = 2  # minutes between logging heartbeat when editing same file
 SEND_BUFFER_SECONDS = 30  # seconds between sending buffered heartbeats to API
-API_SUMMARIES_URL = 'https://api.wakatime.com/api/v1/users/current/summaries?start=today&end=today&api_key={}'
 
 
 # Log Levels
@@ -228,19 +221,49 @@ class FetchStatusBarCodingTime(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
 
+        self.debug = SETTINGS.get('debug')
         self.api_key = SETTINGS.get('api_key', '')
+        self.proxy = SETTINGS.get('proxy')
+        self.python_binary = SETTINGS.get('python_binary')
 
     def run(self):
         if not self.api_key:
             log(DEBUG, 'Missing WakaTime API key.')
             return
 
-        url = API_SUMMARIES_URL.format(self.api_key)
+        python = self.python_binary
+        if not python or not python.strip():
+            python = python_binary()
+        if not python:
+            log(DEBUG, 'Missing Python.')
+            return
+
+        ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
+        cmd = [
+            python,
+            API_CLIENT,
+            '--today',
+            '--key', str(bytes.decode(self.api_key.encode('utf8'))),
+            '--plugin', ua,
+        ]
+        if self.debug:
+            cmd.append('--verbose')
+        if self.proxy:
+            cmd.extend(['--proxy', self.proxy])
+
+        log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
         try:
-            with closing(urllib2.urlopen(url)) as response:
-                grand_total_text = json.loads(u(response.read()))['data'][0]['grand_total']['text']
-                msg = 'Today: {0}'.format(grand_total_text)
+            process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+            output, err = process.communicate()
+            output = u(output)
+            retcode = process.poll()
+            if not retcode and output:
+                msg = 'Today: {output}'.format(output=output)
                 update_status_bar(msg=msg)
+            else:
+                log(DEBUG, 'wakatime-core today exited with status: {0}'.format(retcode))
+                if output:
+                    log(DEBUG, u('wakatime-core today output: {0}').format(output))
         except:
             pass
 
