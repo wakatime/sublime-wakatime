@@ -142,7 +142,8 @@ sys.path.insert(0, os.path.join(PLUGIN_DIR, 'packages'))
 try:
     from wakatime.main import parseConfigFile
 except ImportError:
-    pass
+    def parseConfigFile():
+        return None
 
 
 def set_timeout(callback, seconds):
@@ -274,12 +275,15 @@ def prompt_api_key():
     if SETTINGS.get('api_key'):
         return True
 
-    default_key = ''
     try:
         configs = parseConfigFile()
         if configs is not None:
             if configs.has_option('settings', 'api_key'):
-                default_key = configs.get('settings', 'api_key')
+                key = configs.get('settings', 'api_key')
+                if key:
+                    SETTINGS.set('api_key', str(key))
+                    sublime.save_settings(SETTINGS_FILE)
+                    return True
     except:
         pass
 
@@ -289,7 +293,7 @@ def prompt_api_key():
             if text:
                 SETTINGS.set('api_key', str(text))
                 sublime.save_settings(SETTINGS_FILE)
-        window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', default_key, got_key, None, None)
+        window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', '', got_key, None, None)
         return True
     else:
         log(ERROR, 'Could not prompt for api key because no window found.')
