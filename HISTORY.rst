@@ -3,6 +3,13 @@ History
 -------
 
 
+8.6.0 (2019-05-27)
+++++++++++++++++++
+
+- Prevent prompting for api key when found from config file.
+  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+
+
 8.5.0 (2019-05-10)
 ++++++++++++++++++
 
