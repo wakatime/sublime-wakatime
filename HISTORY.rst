@@ -3,6 +3,13 @@ History
 -------
 
 
+8.6.1 (2019-05-28)
+++++++++++++++++++
+
+- Fix parsing common wakatime.cfg file.
+  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+
+
 8.6.0 (2019-05-27)
 ++++++++++++++++++
 
