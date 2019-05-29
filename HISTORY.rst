@@ -3,6 +3,14 @@ History
 -------
 
 
+8.7.0 (2019-05-29)
+++++++++++++++++++
+
+- Prevent creating user sublime-settings file when api key already exists in
+  common wakatime.cfg file.
+  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+
+
 8.6.1 (2019-05-28)
 ++++++++++++++++++
 
