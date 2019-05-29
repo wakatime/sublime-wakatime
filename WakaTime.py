@@ -146,6 +146,41 @@ except ImportError:
         return None
 
 
+class ApiKey(object):
+    _key = None
+
+    def read(self):
+        if self._key:
+            return self._key
+
+        key = SETTINGS.get('api_key')
+        if key:
+            self._key = key
+            return self._key
+
+        try:
+            configs = parseConfigFile()
+            if configs:
+                if configs.has_option('settings', 'api_key'):
+                    key = configs.get('settings', 'api_key')
+                    if key:
+                        self._key = key
+                        return self._key
+        except:
+            pass
+
+        return self._key
+
+    def write(self, key):
+        global SETTINGS
+        self._key = key
+        SETTINGS.set('api_key', str(key))
+        sublime.save_settings(SETTINGS_FILE)
+
+
+APIKEY = ApiKey()
+
+
 def set_timeout(callback, seconds):
     """Runs the callback after the given seconds delay.
 
@@ -223,7 +258,7 @@ class FetchStatusBarCodingTime(threading.Thread):
         threading.Thread.__init__(self)
 
         self.debug = SETTINGS.get('debug')
-        self.api_key = SETTINGS.get('api_key', '')
+        self.api_key = APIKEY.read() or ''
         self.proxy = SETTINGS.get('proxy')
         self.python_binary = SETTINGS.get('python_binary')
 
@@ -270,29 +305,14 @@ class FetchStatusBarCodingTime(threading.Thread):
 
 
 def prompt_api_key():
-    global SETTINGS
-
-    if SETTINGS.get('api_key'):
+    if APIKEY.read():
         return True
-
-    try:
-        configs = parseConfigFile()
-        if configs is not None:
-            if configs.has_option('settings', 'api_key'):
-                key = configs.get('settings', 'api_key')
-                if key:
-                    SETTINGS.set('api_key', str(key))
-                    sublime.save_settings(SETTINGS_FILE)
-                    return True
-    except:
-        pass
 
     window = sublime.active_window()
     if window:
         def got_key(text):
             if text:
-                SETTINGS.set('api_key', str(text))
-                sublime.save_settings(SETTINGS_FILE)
+                APIKEY.write(text)
         window.show_input_panel('[WakaTime] Enter your wakatime.com api key:', '', got_key, None, None)
         return True
     else:
@@ -568,7 +588,7 @@ class SendHeartbeatsThread(threading.Thread):
         threading.Thread.__init__(self)
 
         self.debug = SETTINGS.get('debug')
-        self.api_key = SETTINGS.get('api_key', '')
+        self.api_key = APIKEY.read() or ''
         self.ignore = SETTINGS.get('ignore', [])
         self.include = SETTINGS.get('include', [])
         self.hidefilenames = SETTINGS.get('hidefilenames')
