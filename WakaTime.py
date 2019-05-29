@@ -140,7 +140,7 @@ ERROR = 'ERROR'
 # add wakatime package to path
 sys.path.insert(0, os.path.join(PLUGIN_DIR, 'packages'))
 try:
-    from wakatime.main import parseConfigFile
+    from wakatime.configs import parseConfigFile
 except ImportError:
     def parseConfigFile():
         return None
