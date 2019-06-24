@@ -3,26 +3,33 @@ History
 -------
 
 
+9.0.0 (2019-06-23)
+++++++++++++++++++
+
+- New optional config option hide_branch_names.
+  `wakatime#183 <https://github.com/wakatime/wakatime/issues/183>`_
+
+
 8.7.0 (2019-05-29)
 ++++++++++++++++++
 
 - Prevent creating user sublime-settings file when api key already exists in
   common wakatime.cfg file.
-  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+  `#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
 
 
 8.6.1 (2019-05-28)
 ++++++++++++++++++
 
 - Fix parsing common wakatime.cfg file.
-  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+  `#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
 
 
 8.6.0 (2019-05-27)
 ++++++++++++++++++
 
 - Prevent prompting for api key when found from config file.
-  `sublime-wakatime#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
+  `#98 <https://github.com/wakatime/sublime-wakatime/issues/98>`_
 
 
 8.5.0 (2019-05-10)
@@ -57,7 +64,7 @@ History
 
 - Upgrade wakatime-cli to v10.8.4.
 - Use wakatime fork of certifi package.
-  `sublime-wakatime#95 <https://github.com/wakatime/sublime-wakatime/issues/95>`_
+  `#95 <https://github.com/wakatime/sublime-wakatime/issues/95>`_
 
 
 8.3.5 (2019-04-30)
@@ -76,11 +83,11 @@ History
 - Detect C++ language from all C++ file extensions.
   `vscode-wakatime#87 <https://github.com/wakatime/vscode-wakatime/issues/87>`_
 - Add ssl_certs_file arg and config for custom ca bundles.
-  `#164 <https://github.com/wakatime/wakatime/issues/164>`_
+  `wakatime#164 <https://github.com/wakatime/wakatime/issues/164>`_
 - Fix bug causing random project names when hide project names enabled.
   `vscode-wakatime#162 <https://github.com/wakatime/vscode-wakatime/issues/61>`_
 - Add support for UNC network shares without drive letter mapped on Winows.
-  `#162 <https://github.com/wakatime/wakatime/issues/162>`_
+  `wakatime#162 <https://github.com/wakatime/wakatime/issues/162>`_
 
 
 8.3.3 (2018-12-19)
