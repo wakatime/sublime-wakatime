@@ -3,6 +3,20 @@ History
 -------
 
 
+9.0.1 (2019-11-24)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v13.0.2.
+- Filter dependencies longer than 200 characters.
+- Close sqlite connection even when error raised.
+  `wakatime#196 <https://github.com/wakatime/wakatime/issues/196>`_
+- Detect ColdFusion as root language instead of HTML.
+- New arguments for reading and writing ini config file.
+- Today argument shows categories when available.
+- Prevent unnecessarily debug log when syncing offline heartbeats.
+- Support for Python 3.7.
+
+
 9.0.0 (2019-06-23)
 ++++++++++++++++++
 
