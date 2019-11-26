@@ -1,3 +1,6 @@
+[![Coding time tracker](https://wakatime.com/badge/github/wakatime/sublime-wakatime.svg)](https://wakatime.com/badge/github/wakatime/sublime-wakatime)
+
+
 sublime-wakatime
 ================
 
