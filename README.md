@@ -1,14 +1,11 @@
+# sublime-wakatime
+
 [![Coding time tracker](https://wakatime.com/badge/github/wakatime/sublime-wakatime.svg)](https://wakatime.com/badge/github/wakatime/sublime-wakatime)
-
-
-sublime-wakatime
-================
 
 Metrics, insights, and time tracking automatically generated from your programming activity.
 
 
-Installation
-------------
+## Installation
 
 1. Install [Package Control](https://packagecontrol.io/installation).
 
@@ -23,14 +20,12 @@ Installation
 6. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
 
-Screen Shots
-------------
+## Screen Shots
 
 ![Project Overview](https://wakatime.com/static/img/ScreenShots/Screen-Shot-2016-03-21.png)
 
 
-Unresponsive Plugin Warning
----------------------------
+## Unresponsive Plugin Warning
 
 In Sublime Text 2, if you get a warning message:
 
@@ -41,8 +36,7 @@ To fix this, go to `Preferences → Settings - User` then add the following sett
 `"detect_slow_plugins": false`
 
 
-Troubleshooting
----------------
+## Troubleshooting
 
 First, turn on debug mode in your `WakaTime.sublime-settings` file.
 
