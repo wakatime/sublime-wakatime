@@ -3,6 +3,14 @@ History
 -------
 
 
+9.0.2 (2019-12-04)
+++++++++++++++++++
+
+- Upgrade wakatime-cli to v13.0.3.
+- Support slashes in Mercurial and Git branch names.
+  `wakatime#199 <https://github.com/wakatime/wakatime/issues/199>`_
+
+
 9.0.1 (2019-11-24)
 ++++++++++++++++++
 
