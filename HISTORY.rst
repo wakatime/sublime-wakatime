@@ -3,6 +3,15 @@ History
 -------
 
 
+9.1.0 (2020-02-09)
+++++++++++++++++++
+
+- Detect python in Windows LocalAppData install locations.
+- Upgrade wakatime-cli to v13.0.4.
+- Bundle cryptography, pyopenssl, and ipaddress packages for improved SSL
+  support on Python2.
+
+
 9.0.2 (2019-12-04)
 ++++++++++++++++++
 
