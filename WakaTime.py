@@ -213,7 +213,7 @@ def log(lvl, message, *args, **kwargs):
 
 
 def resources_folder():
-    if platform.system() == 'Windows':
+    if is_win:
         return os.path.join(os.getenv('APPDATA'), 'WakaTime')
     else:
         return os.path.join(os.path.expanduser('~'), '.wakatime')
@@ -332,6 +332,21 @@ def python_binary():
         '/usr/local/bin/',
         '/usr/bin/',
     ]
+
+    if is_win and os.getenv('LOCALAPPDATA'):
+        appdata = os.getenv('LOCALAPPDATA')
+        ver = 39
+        while ver >= 27:
+            if ver >= 30 and ver <= 33:
+                ver -= 1
+                continue
+            paths.append('\\python{ver}\\'.format(ver=ver))
+            paths.append.push('\\Python{ver}\\'.format(ver=ver))
+            paths.append('{appdata}\\Programs\Python{ver}\\'.format(appdata=appdata, ver=ver))
+            paths.append('{appdata}\\Programs\Python{ver}-32\\'.format(appdata=appdata, ver=ver))
+            paths.append('{appdata}\\Programs\Python{ver}-64\\'.format(appdata=appdata, ver=ver))
+            ver -= 1
+
     for path in paths:
         path = find_python_in_folder(path)
         if path is not None:
@@ -358,7 +373,7 @@ def set_python_binary_location(path):
 
 
 def find_python_from_registry(location, reg=None):
-    if platform.system() != 'Windows' or winreg is None:
+    if not is_win or winreg is None:
         return None
 
     if reg is None:
@@ -747,7 +762,7 @@ def plugin_loaded():
 
     if not python_binary():
         log(WARNING, 'Python binary not found.')
-        if platform.system() == 'Windows':
+        if is_win:
             set_timeout(download_python, 0)
         else:
             sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
