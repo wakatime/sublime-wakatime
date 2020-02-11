@@ -3,6 +3,12 @@ History
 -------
 
 
+9.1.1 (2020-02-11)
+++++++++++++++++++
+
+- Fix typo in python detection on Windows platform.
+
+
 9.1.0 (2020-02-09)
 ++++++++++++++++++
 
