@@ -8,7 +8,7 @@ Website:     https://wakatime.com/
 ==========================================================="""
 
 
-__version__ = '9.1.2'
+__version__ = '10.0.0'
 
 
 import sublime
@@ -26,72 +26,33 @@ import threading
 import traceback
 import urllib
 import webbrowser
+import ssl
+import shutil
 from subprocess import STDOUT, PIPE
 from zipfile import ZipFile
-try:
-    import _winreg as winreg  # py2
-except ImportError:
-    try:
-        import winreg  # py3
-    except ImportError:
-        winreg = None
 try:
     import Queue as queue  # py2
 except ImportError:
     import queue  # py3
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
+try:
+    from urllib2 import urlretrieve
+except ImportError:
+    from urllib.request import urlretrieve
 
 
-is_py2 = (sys.version_info[0] == 2)
-is_py3 = (sys.version_info[0] == 3)
 is_win = platform.system() == 'Windows'
 
 
-if is_py2:
-    def u(text):
-        if text is None:
-            return None
-        if isinstance(text, unicode):
-            return text
-        try:
-            return text.decode('utf-8')
-        except:
-            try:
-                return text.decode(sys.getdefaultencoding())
-            except:
-                try:
-                    return unicode(text)
-                except:
-                    try:
-                        return text.decode('utf-8', 'replace')
-                    except:
-                        try:
-                            return unicode(str(text))
-                        except:
-                            return unicode('')
-
-elif is_py3:
-    def u(text):
-        if text is None:
-            return None
-        if isinstance(text, bytes):
-            try:
-                return text.decode('utf-8')
-            except:
-                try:
-                    return text.decode(sys.getdefaultencoding())
-                except:
-                    pass
-        try:
-            return str(text)
-        except:
-            return text.decode('utf-8', 'replace')
-
+if platform.system() == 'Windows':
+    RESOURCES_FOLDER = os.path.join(os.getenv('APPDATA'), 'WakaTime')
 else:
-    raise Exception('Unsupported Python version: {0}.{1}.{2}'.format(
-        sys.version_info[0],
-        sys.version_info[1],
-        sys.version_info[2],
-    ))
+    RESOURCES_FOLDER = os.path.join(os.path.expanduser('~'), '.wakatime')
+if not os.path.exists(RESOURCES_FOLDER):
+    os.makedirs(RESOURCES_FOLDER)
 
 
 class Popen(subprocess.Popen):
@@ -111,8 +72,8 @@ class Popen(subprocess.Popen):
 
 # globals
 ST_VERSION = int(sublime.version())
-PLUGIN_DIR = os.path.dirname(os.path.realpath(__file__))
-API_CLIENT = os.path.join(PLUGIN_DIR, 'packages', 'wakatime', 'cli.py')
+API_CLIENT = os.path.join(RESOURCES_FOLDER, 'wakatime-cli', 'wakatime-cli' + ('.exe' if is_win else ''))
+S3_HOST = 'https://wakatime-cli.s3-us-west-2.amazonaws.com'
 SETTINGS_FILE = 'WakaTime.sublime-settings'
 SETTINGS = {}
 LAST_HEARTBEAT = {
@@ -124,7 +85,6 @@ LAST_HEARTBEAT_SENT_AT = 0
 LAST_FETCH_TODAY_CODING_TIME = 0
 FETCH_TODAY_DEBOUNCE_COUNTER = 0
 FETCH_TODAY_DEBOUNCE_SECONDS = 60
-PYTHON_LOCATION = None
 HEARTBEATS = queue.Queue()
 HEARTBEAT_FREQUENCY = 2  # minutes between logging heartbeat when editing same file
 SEND_BUFFER_SECONDS = 30  # seconds between sending buffered heartbeats to API
@@ -137,17 +97,36 @@ WARNING = 'WARNING'
 ERROR = 'ERROR'
 
 
-# add wakatime package to path
-sys.path.insert(0, os.path.join(PLUGIN_DIR, 'packages'))
-try:
-    from wakatime.configs import parseConfigFile
-except ImportError:
-    def parseConfigFile():
-        return None
-
-
 class ApiKey(object):
     _key = None
+
+    def _configFile(self):
+        home = os.environ.get('WAKATIME_HOME')
+        if home:
+            return os.path.join(os.path.expanduser(home), '.wakatime.cfg')
+
+        return os.path.join(os.path.expanduser('~'), '.wakatime.cfg')
+
+    def _parseConfigFile(self):
+        """Returns a configparser.SafeConfigParser instance with configs
+        read from the config file. Default location of the config file is
+        at ~/.wakatime.cfg.
+        """
+
+        configFile = self._configFile()
+
+        configs = configparser.SafeConfigParser()
+        try:
+            with open(configFile, 'r', encoding='utf-8') as fh:
+                try:
+                    configs.readfp(fh)
+                    return configs
+                except configparser.Error:
+                    log(ERROR, traceback.format_exc())
+                    return None
+        except IOError:
+            log(DEBUG, "Error: Could not read from config file {0}\n".format(configFile))
+            return None
 
     def read(self):
         if self._key:
@@ -159,7 +138,7 @@ class ApiKey(object):
             return self._key
 
         try:
-            configs = parseConfigFile()
+            configs = self._parseConfigFile()
             if configs:
                 if configs.has_option('settings', 'api_key'):
                     key = configs.get('settings', 'api_key')
@@ -207,16 +186,9 @@ def log(lvl, message, *args, **kwargs):
         try:
             print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
         except UnicodeDecodeError:
-            print(u('[WakaTime] [{lvl}] {msg}').format(lvl=lvl, msg=u(msg)))
+            print('[WakaTime] [{lvl}] {msg}'.format(lvl=lvl, msg=msg))
     except RuntimeError:
         set_timeout(lambda: log(lvl, message, *args, **kwargs), 0)
-
-
-def resources_folder():
-    if is_win:
-        return os.path.join(os.getenv('APPDATA'), 'WakaTime')
-    else:
-        return os.path.join(os.path.expanduser('~'), '.wakatime')
 
 
 def update_status_bar(status=None, debounced=False, msg=None):
@@ -259,24 +231,15 @@ class FetchStatusBarCodingTime(threading.Thread):
 
         self.debug = SETTINGS.get('debug')
         self.api_key = APIKEY.read() or ''
-        self.proxy = SETTINGS.get('proxy')
-        self.python_binary = SETTINGS.get('python_binary')
+        self.proxy = SETTINGS.get('proxy')        
 
     def run(self):
         if not self.api_key:
             log(DEBUG, 'Missing WakaTime API key.')
             return
 
-        python = self.python_binary
-        if not python or not python.strip():
-            python = python_binary()
-        if not python:
-            log(DEBUG, 'Missing Python.')
-            return
-
         ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
-        cmd = [
-            python,
+        cmd = [            
             API_CLIENT,
             '--today',
             '--key', str(bytes.decode(self.api_key.encode('utf8'))),
@@ -290,16 +253,15 @@ class FetchStatusBarCodingTime(threading.Thread):
         log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
         try:
             process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-            output, err = process.communicate()
-            output = u(output)
+            output, _err = process.communicate()
             retcode = process.poll()
             if not retcode and output:
-                msg = 'Today: {output}'.format(output=output)
+                msg = 'Today: {output}'.format(output=output.decode('utf-8'))
                 update_status_bar(msg=msg)
             else:
                 log(DEBUG, 'wakatime-core today exited with status: {0}'.format(retcode))
                 if output:
-                    log(DEBUG, u('wakatime-core today output: {0}').format(output))
+                    log(DEBUG, 'wakatime-core today output: {0}'.format(output))
         except:
             pass
 
@@ -318,155 +280,6 @@ def prompt_api_key():
     else:
         log(ERROR, 'Could not prompt for api key because no window found.')
         return False
-
-
-def python_binary():
-    if PYTHON_LOCATION is not None:
-        return PYTHON_LOCATION
-
-    # look for python in PATH and common install locations
-    paths = [
-        os.path.join(resources_folder(), 'python'),
-        None,
-        '/',
-        '/usr/local/bin/',
-        '/usr/bin/',
-    ]
-
-    if is_win and os.getenv('LOCALAPPDATA'):
-        appdata = os.getenv('LOCALAPPDATA')
-        ver = 39
-        while ver >= 27:
-            if ver >= 30 and ver <= 33:
-                ver -= 1
-                continue
-            paths.append('\\python{ver}\\'.format(ver=ver))
-            paths.append('\\Python{ver}\\'.format(ver=ver))
-            paths.append('{appdata}\\Programs\Python{ver}\\'.format(appdata=appdata, ver=ver))
-            paths.append('{appdata}\\Programs\Python{ver}-32\\'.format(appdata=appdata, ver=ver))
-            paths.append('{appdata}\\Programs\Python{ver}-64\\'.format(appdata=appdata, ver=ver))
-            ver -= 1
-
-    for path in paths:
-        path = find_python_in_folder(path)
-        if path is not None:
-            set_python_binary_location(path)
-            return path
-
-    # look for python in windows registry
-    path = find_python_from_registry(r'SOFTWARE\Python\PythonCore')
-    if path is not None:
-        set_python_binary_location(path)
-        return path
-    path = find_python_from_registry(r'SOFTWARE\Wow6432Node\Python\PythonCore')
-    if path is not None:
-        set_python_binary_location(path)
-        return path
-
-    return None
-
-
-def set_python_binary_location(path):
-    global PYTHON_LOCATION
-    PYTHON_LOCATION = path
-    log(DEBUG, 'Found Python at: {0}'.format(path))
-
-
-def find_python_from_registry(location, reg=None):
-    if not is_win or winreg is None:
-        return None
-
-    if reg is None:
-        path = find_python_from_registry(location, reg=winreg.HKEY_CURRENT_USER)
-        if path is None:
-            path = find_python_from_registry(location, reg=winreg.HKEY_LOCAL_MACHINE)
-        return path
-
-    val = None
-    sub_key = 'InstallPath'
-    compiled = re.compile(r'^\d+\.\d+$')
-
-    try:
-        with winreg.OpenKey(reg, location) as handle:
-            versions = []
-            try:
-                for index in range(1024):
-                    version = winreg.EnumKey(handle, index)
-                    try:
-                        if compiled.search(version):
-                            versions.append(version)
-                    except re.error:
-                        pass
-            except EnvironmentError:
-                pass
-            versions.sort(reverse=True)
-            for version in versions:
-                try:
-                    path = winreg.QueryValue(handle, version + '\\' + sub_key)
-                    if path is not None:
-                        path = find_python_in_folder(path)
-                        if path is not None:
-                            log(DEBUG, 'Found python from {reg}\\{key}\\{version}\\{sub_key}.'.format(
-                                reg=reg,
-                                key=location,
-                                version=version,
-                                sub_key=sub_key,
-                            ))
-                            return path
-                except WindowsError:
-                    log(DEBUG, 'Could not read registry value "{reg}\\{key}\\{version}\\{sub_key}".'.format(
-                        reg=reg,
-                        key=location,
-                        version=version,
-                        sub_key=sub_key,
-                    ))
-    except WindowsError:
-        log(DEBUG, 'Could not read registry value "{reg}\\{key}".'.format(
-            reg=reg,
-            key=location,
-        ))
-    except:
-        log(ERROR, 'Could not read registry value "{reg}\\{key}":\n{exc}'.format(
-            reg=reg,
-            key=location,
-            exc=traceback.format_exc(),
-        ))
-
-    return val
-
-
-def find_python_in_folder(folder, python3=True, headless=True):
-    pattern = re.compile(r'\d+\.\d+')
-
-    path = 'python'
-    if folder:
-        path = os.path.realpath(os.path.join(folder, 'python'))
-    if python3:
-        path = u(path) + u('3')
-    elif headless:
-        path = u(path) + u('w')
-    log(DEBUG, u('Looking for Python at: {0}').format(u(path)))
-    try:
-        process = Popen([path, '--version'], stdout=PIPE, stderr=STDOUT)
-        output, err = process.communicate()
-        output = u(output).strip()
-        retcode = process.poll()
-        log(DEBUG, u('Python Version Output: {0}').format(output))
-        if not retcode and pattern.search(output):
-            return path
-    except:
-        log(DEBUG, u(sys.exc_info()[1]))
-
-    if python3:
-        path = find_python_in_folder(folder, python3=False, headless=headless)
-        if path:
-            return path
-    elif headless:
-        path = find_python_in_folder(folder, python3=python3, headless=False)
-        if path:
-            return path
-
-    return None
 
 
 def obfuscate_apikey(command_list):
@@ -645,112 +458,61 @@ class SendHeartbeatsThread(threading.Thread):
         return heartbeat
 
     def send_heartbeats(self):
-        python = self.python_binary
-        if not python or not python.strip():
-            python = python_binary()
-        if python:
-            heartbeat = self.build_heartbeat(**self.heartbeat)
-            ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
-            cmd = [
-                python,
-                API_CLIENT,
-                '--entity', heartbeat['entity'],
-                '--time', str('%f' % heartbeat['timestamp']),
-                '--plugin', ua,
-            ]
-            if self.api_key:
-                cmd.extend(['--key', str(bytes.decode(self.api_key.encode('utf8')))])
-            if heartbeat['is_write']:
-                cmd.append('--write')
-            if heartbeat.get('alternate_project'):
-                cmd.extend(['--alternate-project', heartbeat['alternate_project']])
-            if heartbeat.get('cursorpos') is not None:
-                cmd.extend(['--cursorpos', heartbeat['cursorpos']])
-            for pattern in self.ignore:
-                cmd.extend(['--exclude', pattern])
-            for pattern in self.include:
-                cmd.extend(['--include', pattern])
-            if self.debug:
-                cmd.append('--verbose')
-            if self.hidefilenames:
-                cmd.append('--hidefilenames')
-            if self.proxy:
-                cmd.extend(['--proxy', self.proxy])
-            if self.has_extra_heartbeats:
-                cmd.append('--extra-heartbeats')
-                stdin = PIPE
-                extra_heartbeats = json.dumps([self.build_heartbeat(**x) for x in self.extra_heartbeats])
-                inp = "{0}\n".format(extra_heartbeats).encode('utf-8')
-            else:
-                extra_heartbeats = None
-                stdin = None
-                inp = None
-
-            log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
-            try:
-                process = Popen(cmd, stdin=stdin, stdout=PIPE, stderr=STDOUT)
-                output, err = process.communicate(input=inp)
-                output = u(output)
-                retcode = process.poll()
-                if (not retcode or retcode == 102) and not output:
-                    self.sent()
-                else:
-                    update_status_bar('Error')
-                if retcode:
-                    log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
-                if output:
-                    log(ERROR, u('wakatime-core output: {0}').format(output))
-            except:
-                log(ERROR, u(sys.exc_info()[1]))
-                update_status_bar('Error')
-
+        heartbeat = self.build_heartbeat(**self.heartbeat)
+        ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
+        cmd = [
+            API_CLIENT,
+            '--entity', heartbeat['entity'],
+            '--time', str('%f' % heartbeat['timestamp']),
+            '--plugin', ua,
+        ]
+        if self.api_key:
+            cmd.extend(['--key', str(bytes.decode(self.api_key.encode('utf8')))])
+        if heartbeat['is_write']:
+            cmd.append('--write')
+        if heartbeat.get('alternate_project'):
+            cmd.extend(['--alternate-project', heartbeat['alternate_project']])
+        if heartbeat.get('cursorpos') is not None:
+            cmd.extend(['--cursorpos', heartbeat['cursorpos']])
+        for pattern in self.ignore:
+            cmd.extend(['--exclude', pattern])
+        for pattern in self.include:
+            cmd.extend(['--include', pattern])
+        if self.debug:
+            cmd.append('--verbose')
+        if self.hidefilenames:
+            cmd.append('--hidefilenames')
+        if self.proxy:
+            cmd.extend(['--proxy', self.proxy])
+        if self.has_extra_heartbeats:
+            cmd.append('--extra-heartbeats')
+            stdin = PIPE
+            extra_heartbeats = json.dumps([self.build_heartbeat(**x) for x in self.extra_heartbeats])
+            inp = "{0}\n".format(extra_heartbeats).encode('utf-8')
         else:
-            log(ERROR, 'Unable to find python binary.')
+            extra_heartbeats = None
+            stdin = None
+            inp = None
+
+        log(DEBUG, ' '.join(obfuscate_apikey(cmd)))
+        try:
+            process = Popen(cmd, stdin=stdin, stdout=PIPE, stderr=STDOUT)
+            output, _err = process.communicate(input=inp)
+            retcode = process.poll()
+            if (not retcode or retcode == 102) and not output:
+                self.sent()
+            else:
+                update_status_bar('Error')
+            if retcode:
+                log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
+            if output:
+                log(ERROR, 'wakatime-core output: {0}'.format(output))
+        except:
+            log(ERROR, sys.exc_info()[1])
             update_status_bar('Error')
 
     def sent(self):
         update_status_bar('OK')
-
-
-def download_python():
-    thread = DownloadPython()
-    thread.start()
-
-
-class DownloadPython(threading.Thread):
-    """Non-blocking thread for extracting embeddable Python on Windows machines.
-    """
-
-    def run(self):
-        log(INFO, 'Downloading embeddable Python...')
-
-        ver = '3.8.1'
-        arch = 'amd64' if platform.architecture()[0] == '64bit' else 'win32'
-        url = 'https://www.python.org/ftp/python/{ver}/python-{ver}-embed-{arch}.zip'.format(
-            ver=ver,
-            arch=arch,
-        )
-
-        if not os.path.exists(resources_folder()):
-            os.makedirs(resources_folder())
-
-        zip_file = os.path.join(resources_folder(), 'python.zip')
-        try:
-            urllib.urlretrieve(url, zip_file)
-        except AttributeError:
-            urllib.request.urlretrieve(url, zip_file)
-
-        log(INFO, 'Extracting Python...')
-        with contextlib.closing(ZipFile(zip_file)) as zf:
-            path = os.path.join(resources_folder(), 'python')
-            zf.extractall(path)
-
-        try:
-            os.remove(zip_file)
-        except:
-            pass
-
-        log(INFO, 'Finished extracting Python.')
 
 
 def plugin_loaded():
@@ -760,13 +522,11 @@ def plugin_loaded():
     log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
     update_status_bar('Initializing...')
 
-    if not python_binary():
-        log(WARNING, 'Python binary not found.')
-        if is_win:
-            set_timeout(download_python, 0)
-        else:
-            sublime.error_message("Unable to find Python binary!\nWakaTime needs Python to work correctly.\n\nGo to https://www.python.org/downloads")
-            return
+    if not isCliLatest():
+        thread = DownloadCLI()
+        thread.start()
+    
+    log(INFO, 'Finished initializing WakaTime v%s' % __version__)
 
     after_loaded()
 
@@ -800,3 +560,113 @@ class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
 
     def run(self):
         webbrowser.open_new_tab('https://wakatime.com/dashboard')
+
+
+class DownloadCLI(threading.Thread):
+    """Non-blocking thread for downloading latest wakatime-cli from GitHub.
+    """
+
+    def run(self):
+        log(INFO, 'Downloading wakatime-cli...')
+
+        try:
+            shutil.rmtree(os.path.join(RESOURCES_FOLDER, 'wakatime-cli'))
+        except:
+            pass
+
+        try:
+            url = self._getCliUrl()
+            zip_file = os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip')
+            download(url, zip_file)
+
+            log(INFO, 'Extracting wakatime-cli...')
+            with ZipFile(zip_file) as zf:
+                zf.extractall(RESOURCES_FOLDER)
+
+            try:
+                shutil.rmtree(os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip'))
+            except:
+                pass
+        except:
+            log(DEBUG, traceback.format_exc())
+
+        log(INFO, 'Finished extracting wakatime-cli.')
+
+    def _getCliUrl(self):
+        os = platform.system().lower().replace('darwin', 'mac')
+        arch = '64' if sys.maxsize > 2**32 else '32'
+        return '{host}/{os}-x86-{arch}/wakatime-cli.zip'.format(
+            host=S3_HOST,
+            os=os,
+            arch=arch,
+        )
+
+
+def isCliInstalled():
+    return os.path.exists(API_CLIENT)
+
+def isCliLatest():
+    if not isCliInstalled():
+        return False
+    
+    args = [API_CLIENT, '--version']
+    stdout, stderr = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+    stdout = (stdout or b'') + (stderr or b'')
+    localVer = extractVersion(stdout.decode('utf-8'))
+    if not localVer:
+        return False
+
+    log(INFO, 'Current wakatime-cli version is %s' % localVer)
+    log(INFO, 'Checking for updates to wakatime-cli...')
+
+    remoteVer = getLatestCliVersion()    
+
+    if not remoteVer:
+        return True
+
+    if remoteVer == localVer:
+        log(INFO, 'wakatime-cli is up to date.')
+        return True
+
+    log(INFO, 'Found an updated wakatime-cli v%s' % remoteVer)
+    return False
+
+def getLatestCliVersion():
+    url = getCliVersionUrl()
+    try:
+        localFile = os.path.join(RESOURCES_FOLDER, 'current_version.txt')
+        download(url, localFile)
+        ver = None
+        with open(localFile) as fh:
+            ver = extractVersion(fh.read())
+        try:
+            shutil.rmtree(localFile)
+        except:
+            pass
+        return ver
+    except:
+        return None
+
+def getCliVersionUrl():
+    os = platform.system().lower().replace('darwin', 'mac')
+    arch = '64' if sys.maxsize > 2**32 else '32'
+    return '{host}/{os}-x86-{arch}/current_version.txt'.format(
+        host=S3_HOST,
+        os=os,
+        arch=arch,
+    )
+
+def extractVersion(text):
+    log(DEBUG, 'extracting version.')
+    pattern = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+)")
+    match = pattern.search(text)
+    if match:
+        return match.group(1)
+    return None
+
+def download(url, filePath):
+    try:
+        urlretrieve(url, filePath)
+    except IOError:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        urlretrieve(url, filePath)
