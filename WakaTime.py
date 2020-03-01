@@ -14,7 +14,6 @@ __version__ = '10.0.0'
 import sublime
 import sublime_plugin
 
-import contextlib
 import json
 import os
 import platform
@@ -24,7 +23,6 @@ import sys
 import time
 import threading
 import traceback
-import urllib
 import webbrowser
 import ssl
 import shutil
@@ -231,15 +229,17 @@ class FetchStatusBarCodingTime(threading.Thread):
 
         self.debug = SETTINGS.get('debug')
         self.api_key = APIKEY.read() or ''
-        self.proxy = SETTINGS.get('proxy')        
+        self.proxy = SETTINGS.get('proxy')
 
     def run(self):
         if not self.api_key:
             log(DEBUG, 'Missing WakaTime API key.')
             return
+        if not isCliInstalled():
+            return
 
         ua = 'sublime/%d sublime-wakatime/%s' % (ST_VERSION, __version__)
-        cmd = [            
+        cmd = [
             API_CLIENT,
             '--today',
             '--key', str(bytes.decode(self.api_key.encode('utf8'))),
@@ -382,9 +382,12 @@ def append_heartbeat(entity, timestamp, is_write, view, project, folders):
 def process_queue(timestamp):
     global LAST_HEARTBEAT_SENT_AT
 
+    if not isCliInstalled():
+        return
+
     # Prevent sending heartbeats more often than SEND_BUFFER_SECONDS
     now = int(time.time())
-    if isCliInstalled() and timestamp != LAST_HEARTBEAT['time'] and LAST_HEARTBEAT_SENT_AT > now - SEND_BUFFER_SECONDS:
+    if timestamp != LAST_HEARTBEAT['time'] and LAST_HEARTBEAT_SENT_AT > now - SEND_BUFFER_SECONDS:
         return
     LAST_HEARTBEAT_SENT_AT = now
 
@@ -524,7 +527,7 @@ def plugin_loaded():
     if not isCliLatest():
         thread = DownloadCLI()
         thread.start()
-    
+
     log(INFO, 'Finished initializing WakaTime v%s' % __version__)
 
     after_loaded()
@@ -604,10 +607,11 @@ class DownloadCLI(threading.Thread):
 def isCliInstalled():
     return os.path.exists(API_CLIENT)
 
+
 def isCliLatest():
     if not isCliInstalled():
         return False
-    
+
     args = [API_CLIENT, '--version']
     stdout, stderr = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
     stdout = (stdout or b'') + (stderr or b'')
@@ -618,7 +622,7 @@ def isCliLatest():
     log(INFO, 'Current wakatime-cli version is %s' % localVer)
     log(INFO, 'Checking for updates to wakatime-cli...')
 
-    remoteVer = getLatestCliVersion()    
+    remoteVer = getLatestCliVersion()
 
     if not remoteVer:
         return True
@@ -629,6 +633,7 @@ def isCliLatest():
 
     log(INFO, 'Found an updated wakatime-cli v%s' % remoteVer)
     return False
+
 
 def getLatestCliVersion():
     url = getCliVersionUrl()
@@ -646,6 +651,7 @@ def getLatestCliVersion():
     except:
         return None
 
+
 def getCliVersionUrl():
     os = platform.system().lower().replace('darwin', 'mac')
     arch = '64' if sys.maxsize > 2**32 else '32'
@@ -655,6 +661,7 @@ def getCliVersionUrl():
         arch=arch,
     )
 
+
 def extractVersion(text):
     log(DEBUG, 'extracting version.')
     pattern = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+)")
@@ -662,6 +669,7 @@ def extractVersion(text):
     if match:
         return match.group(1)
     return None
+
 
 def download(url, filePath):
     try:
