@@ -4,7 +4,6 @@
 
 Metrics, insights, and time tracking automatically generated from your programming activity.
 
-
 ## Installation
 
 1. Install [Package Control](https://packagecontrol.io/installation).
@@ -19,11 +18,9 @@ Metrics, insights, and time tracking automatically generated from your programmi
 
 6. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
-
 ## Screen Shots
 
 ![Project Overview](https://wakatime.com/static/img/ScreenShots/Screen-Shot-2016-03-21.png)
-
 
 ## Unresponsive Plugin Warning
 
@@ -34,7 +31,6 @@ In Sublime Text 2, if you get a warning message:
 To fix this, go to `Preferences → Settings - User` then add the following setting:
 
 `"detect_slow_plugins": false`
-
 
 ## Troubleshooting
 
@@ -49,7 +45,6 @@ Also, tail your `$HOME/.wakatime.log` file to debug wakatime cli problems.
 
 The [How to Debug Plugins][how to debug] guide shows how to check when coding activity was last received from your editor using the [User Agents API][user agents api].
 For more general troubleshooting info, see the [wakatime-cli Troubleshooting Section][wakatime-cli-help].
-
 
 [wakatime-cli-help]: https://github.com/wakatime/wakatime#troubleshooting
 [how to debug]: https://wakatime.com/faq#debug-plugins
