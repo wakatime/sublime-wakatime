@@ -384,7 +384,7 @@ def process_queue(timestamp):
 
     # Prevent sending heartbeats more often than SEND_BUFFER_SECONDS
     now = int(time.time())
-    if timestamp != LAST_HEARTBEAT['time'] and LAST_HEARTBEAT_SENT_AT > now - SEND_BUFFER_SECONDS:
+    if isCliInstalled() and timestamp != LAST_HEARTBEAT['time'] and LAST_HEARTBEAT_SENT_AT > now - SEND_BUFFER_SECONDS:
         return
     LAST_HEARTBEAT_SENT_AT = now
 
@@ -421,7 +421,6 @@ class SendHeartbeatsThread(threading.Thread):
         self.include = SETTINGS.get('include', [])
         self.hidefilenames = SETTINGS.get('hidefilenames')
         self.proxy = SETTINGS.get('proxy')
-        self.python_binary = SETTINGS.get('python_binary')
 
         self.heartbeat = heartbeat
         self.has_extra_heartbeats = False
