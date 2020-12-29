@@ -4,6 +4,7 @@
 
 [WakaTime][wakatime] is an open source plugin for metrics, insights, and time tracking automatically generated from your programming activity.
 
+
 ## Installation
 
 1. Install [Package Control](https://packagecontrol.io/installation).
@@ -18,9 +19,11 @@
 
 6. Use Sublime and your coding activity will be displayed on your [WakaTime dashboard](https://wakatime.com).
 
+
 ## Screen Shots
 
 ![Project Overview](https://wakatime.com/static/img/ScreenShots/Screen-Shot-2016-03-21.png)
+
 
 ## Unresponsive Plugin Warning
 
@@ -31,6 +34,7 @@ In Sublime Text 2, if you get a warning message:
 To fix this, go to `Preferences → Settings - User` then add the following setting:
 
 `"detect_slow_plugins": false`
+
 
 ## Troubleshooting
 

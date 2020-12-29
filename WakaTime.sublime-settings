@@ -33,5 +33,8 @@
     "hidefilenames": false,
 
     // Python binary location. Uses python from your PATH by default.
-    "python_binary": ""
+    "python_binary": "",
+
+    // Use standalone compiled Python wakatime-cli (Will not work on ARM Macs)
+    "standalone": false
 }
