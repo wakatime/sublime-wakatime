@@ -2,7 +2,7 @@
 
 [![Coding time tracker](https://wakatime.com/badge/github/wakatime/sublime-wakatime.svg)](https://wakatime.com/badge/github/wakatime/sublime-wakatime)
 
-[WakaTime][wakatime] is an open source plugin for metrics, insights, and time tracking automatically generated from your programming activity.
+[WakaTime][wakatime] is an open source Sublime Text plugin for metrics, insights, and time tracking automatically generated from your programming activity.
 
 
 ## Installation
