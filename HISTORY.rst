@@ -3,10 +3,10 @@ History
 -------
 
 
-10.0.0 (2020-02-29)
+10.0.0 (2020-12-28)
 ++++++++++++++++++
 
-- Remove support for non-standalone cli.
+- Support for standalone wakatime-cli, disabled by default.
 
 
 9.1.2 (2020-02-13)
