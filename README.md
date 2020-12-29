@@ -2,7 +2,7 @@
 
 [![Coding time tracker](https://wakatime.com/badge/github/wakatime/sublime-wakatime.svg)](https://wakatime.com/badge/github/wakatime/sublime-wakatime)
 
-Metrics, insights, and time tracking automatically generated from your programming activity.
+[WakaTime][wakatime] is an open source plugin for metrics, insights, and time tracking automatically generated from your programming activity.
 
 ## Installation
 
@@ -46,6 +46,7 @@ Also, tail your `$HOME/.wakatime.log` file to debug wakatime cli problems.
 The [How to Debug Plugins][how to debug] guide shows how to check when coding activity was last received from your editor using the [User Agents API][user agents api].
 For more general troubleshooting info, see the [wakatime-cli Troubleshooting Section][wakatime-cli-help].
 
+[wakatime]: https://wakatime.com/sublime-text
 [wakatime-cli-help]: https://github.com/wakatime/wakatime#troubleshooting
 [how to debug]: https://wakatime.com/faq#debug-plugins
 [user agents api]: https://wakatime.com/developers#user_agents
