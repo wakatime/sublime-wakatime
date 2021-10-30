@@ -336,6 +336,8 @@ class FetchStatusBarCodingTime(threading.Thread):
             process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
             output, err = process.communicate()
             output = u(output)
+            if output:
+                output = output.strip()
             retcode = process.poll()
             if not retcode and output:
                 msg = 'Today: {output}'.format(output=output)
