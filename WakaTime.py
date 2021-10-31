@@ -18,7 +18,6 @@ import json
 import os
 import platform
 import re
-import shutil
 import ssl
 import subprocess
 import sys
@@ -39,9 +38,10 @@ try:
 except ImportError:
     import configparser
 try:
-    from urllib2 import urlopen, urlretrieve, ProxyHandler, build_opener, install_opener
+    from urllib2 import urlopen, urlretrieve, ProxyHandler, build_opener, install_opener, HTTPError
 except ImportError:
     from urllib.request import urlopen, urlretrieve, ProxyHandler, build_opener, install_opener
+    from urllib.error import HTTPError
 
 
 is_py2 = (sys.version_info[0] == 2)
@@ -50,6 +50,9 @@ is_win = platform.system() == 'Windows'
 
 
 if is_py2:
+    import codecs
+    open = codecs.open
+
     def u(text):
         if text is None:
             return None
@@ -114,9 +117,10 @@ class Popen(subprocess.Popen):
 
 # globals
 ST_VERSION = int(sublime.version())
-RESOURCES_FOLDER = os.path.join(os.environ.get('WAKATIME_HOME') or os.path.expanduser('~'), '.wakatime')
-CONFIG_FILE = os.path.join(RESOURCES_FOLDER, '.wakatime.cfg')
-INTERNAL_CONFIG_FILE = os.path.join(RESOURCES_FOLDER, '.wakatime-internal.cfg')
+HOME_FOLDER = os.path.realpath(os.environ.get('WAKATIME_HOME') or os.path.expanduser('~'))
+RESOURCES_FOLDER = os.path.join(HOME_FOLDER, '.wakatime')
+CONFIG_FILE = os.path.join(HOME_FOLDER, '.wakatime.cfg')
+INTERNAL_CONFIG_FILE = os.path.join(HOME_FOLDER, '.wakatime-internal.cfg')
 GITHUB_RELEASES_STABLE_URL = 'https://api.github.com/repos/wakatime/wakatime-cli/releases/latest'
 GITHUB_DOWNLOAD_PREFIX = 'https://github.com/wakatime/wakatime-cli/releases/download'
 SETTINGS_FILE = 'WakaTime.sublime-settings'
@@ -161,7 +165,7 @@ def parseConfigFile(configFile):
                 return None
     except IOError:
         log(DEBUG, "Error: Could not read from config file {0}\n".format(configFile))
-        return None
+        return configs
 
 
 class ApiKey(object):
@@ -617,13 +621,15 @@ class DownloadCLI(threading.Thread):
         if not os.path.exists(RESOURCES_FOLDER):
             os.makedirs(RESOURCES_FOLDER)
 
-        try:
-            shutil.rmtree(os.path.join(RESOURCES_FOLDER, 'wakatime-cli'))
-        except:
-            pass
+        if isCliInstalled():
+            try:
+                os.remove(getCliLocation())
+            except:
+                log(DEBUG, traceback.format_exc())
 
         try:
             url = cliDownloadUrl()
+            log(DEBUG, 'Downloading wakatime-cli from {url}'.format(url=url))
             zip_file = os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip')
             download(url, zip_file)
 
@@ -631,10 +637,13 @@ class DownloadCLI(threading.Thread):
             with ZipFile(zip_file) as zf:
                 zf.extractall(RESOURCES_FOLDER)
 
+            if not is_win:
+                os.chmod(getCliLocation(), 509)  # 755
+
             try:
-                shutil.rmtree(os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip'))
+                os.remove(os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip'))
             except:
-                pass
+                log(DEBUG, traceback.format_exc())
         except:
             log(DEBUG, traceback.format_exc())
 
@@ -675,10 +684,14 @@ def isCliLatest():
         return False
 
     args = [getCliLocation(), '--version']
-    stdout, stderr = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+    try:
+        stdout, stderr = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+    except:
+        return False
     stdout = (stdout or b'') + (stderr or b'')
     localVer = extractVersion(stdout.decode('utf-8'))
     if not localVer:
+        log(DEBUG, 'Local wakatime-cli version not found.')
         return False
 
     log(INFO, 'Current wakatime-cli version is %s' % localVer)
@@ -693,7 +706,7 @@ def isCliLatest():
         log(INFO, 'wakatime-cli is up to date.')
         return True
 
-    log(INFO, 'Found an updated wakatime-cli v%s' % remoteVer)
+    log(INFO, 'Found an updated wakatime-cli %s' % remoteVer)
     return False
 
 
@@ -703,7 +716,7 @@ def getLatestCliVersion():
     if LATEST_CLI_VERSION:
         return LATEST_CLI_VERSION
 
-    last_modified, last_version = None, None
+    configs, last_modified, last_version = None, None, None
     try:
         configs = parseConfigFile(INTERNAL_CONFIG_FILE)
         if configs:
@@ -712,10 +725,10 @@ def getLatestCliVersion():
             if last_version and configs.has_option('internal', 'cli_version_last_modified'):
                 last_modified = configs.get('internal', 'cli_version_last_modified')
     except:
-        pass
+        log(DEBUG, traceback.format_exc())
 
     try:
-        resp, contents, code = request(GITHUB_RELEASES_STABLE_URL, last_modified=last_modified)
+        headers, contents, code = request(GITHUB_RELEASES_STABLE_URL, last_modified=last_modified)
 
         log(DEBUG, 'GitHub API Response {0}'.format(code))
 
@@ -723,25 +736,32 @@ def getLatestCliVersion():
             LATEST_CLI_VERSION = last_version
             return last_version
 
-        data = json.loads(contents)
+        data = json.loads(contents.decode('utf-8'))
 
         ver = data['tag_name']
         log(DEBUG, 'Latest wakatime-cli version from GitHub: {0}'.format(ver))
 
-        # TODO: update internal last modified and version
+        if configs:
+            last_modified = headers.get('Last-Modified')
+            if not configs.has_section('internal'):
+                configs.add_section('internal')
+            configs.set('internal', 'cli_version', ver)
+            configs.set('internal', 'cli_version_last_modified', last_modified)
+            with open(INTERNAL_CONFIG_FILE, 'w', encoding='utf-8') as fh:
+                configs.write(fh)
 
         LATEST_CLI_VERSION = ver
         return ver
     except:
+        log(DEBUG, traceback.format_exc())
         return None
 
 
 def extractVersion(text):
-    log(DEBUG, 'extracting version.')
     pattern = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+)")
     match = pattern.search(text)
     if match:
-        return match.group(1)
+        return 'v{ver}'.format(ver=match.group(1))
     return None
 
 
@@ -812,11 +832,24 @@ def request(url, last_modified=None):
 
     try:
         resp = urlopen(url)
-        return resp, resp.read(), resp.getcode()
+        headers = dict(resp.getheaders()) if is_py2 else resp.headers
+        return headers, resp.read(), resp.getcode()
+    except HTTPError as err:
+        if err.code == 304:
+            return None, None, 304
+        raise
     except IOError:
-        ssl._create_default_https_context = ssl._create_unverified_context
-        resp = urlopen(url)
-        return resp, resp.read(), resp.getcode()
+        if is_py2:
+            ssl._create_default_https_context = ssl._create_unverified_context
+            try:
+                resp = urlopen(url)
+                headers = dict(resp.getheaders()) if is_py2 else resp.headers
+                return headers, resp.read(), resp.getcode()
+            except HTTPError as err:
+                if err.code == 304:
+                    return None, None, 304
+                raise
+        raise
 
 
 def download(url, filePath):
@@ -835,5 +868,7 @@ def download(url, filePath):
     try:
         urlretrieve(url, filePath)
     except IOError:
-        ssl._create_default_https_context = ssl._create_unverified_context
-        urlretrieve(url, filePath)
+        if is_py2:
+            ssl._create_default_https_context = ssl._create_unverified_context
+            urlretrieve(url, filePath)
+        raise
