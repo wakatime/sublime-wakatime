@@ -837,6 +837,18 @@ def request(url, last_modified=None):
     except HTTPError as err:
         if err.code == 304:
             return None, None, 304
+        if is_py2:
+            ssl._create_default_https_context = ssl._create_unverified_context
+            try:
+                resp = urlopen(url)
+                headers = dict(resp.getheaders()) if is_py2 else resp.headers
+                return headers, resp.read(), resp.getcode()
+            except HTTPError as err:
+                if err.code == 304:
+                    return None, None, 304
+                raise
+            except IOError:
+                raise
         raise
     except IOError:
         if is_py2:
@@ -848,6 +860,8 @@ def request(url, last_modified=None):
             except HTTPError as err:
                 if err.code == 304:
                     return None, None, 304
+                raise
+            except IOError:
                 raise
         raise
 
