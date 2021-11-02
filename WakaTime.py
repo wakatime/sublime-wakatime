@@ -843,12 +843,15 @@ def request(url, last_modified=None):
                 resp = urlopen(url)
                 headers = dict(resp.getheaders()) if is_py2 else resp.headers
                 return headers, resp.read(), resp.getcode()
-            except HTTPError as err:
-                if err.code == 304:
+            except HTTPError as err2:
+                if err2.code == 304:
                     return None, None, 304
+                log(DEBUG, err.read().decode())
+                log(DEBUG, err2.read().decode())
                 raise
             except IOError:
                 raise
+        log(DEBUG, err.read().decode())
         raise
     except IOError:
         if is_py2:
@@ -860,6 +863,7 @@ def request(url, last_modified=None):
             except HTTPError as err:
                 if err.code == 304:
                     return None, None, 304
+                log(DEBUG, err.read().decode())
                 raise
             except IOError:
                 raise
