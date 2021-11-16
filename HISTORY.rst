@@ -3,6 +3,12 @@ History
 -------
 
 
+11.0.1 (2021-11-16)
+++++++++++++++++++
+
+- Bugfix for install script when using system Python3 and duplicat INI keys.
+
+
 11.0.0 (2021-10-31)
 ++++++++++++++++++
 
