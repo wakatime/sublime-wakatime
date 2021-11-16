@@ -34,9 +34,10 @@ except ImportError:
     import queue  # py3
 
 try:
-    import ConfigParser as configparser
+    from ConfigParser import SafeConfigParser as ConfigParser
+    from ConfigParser import Error as ConfigParserError
 except ImportError:
-    import configparser
+    from configparser import ConfigParser, Error as ConfigParserError
 try:
     from urllib2 import urlopen, urlretrieve, ProxyHandler, build_opener, install_opener, HTTPError
 except ImportError:
@@ -154,13 +155,17 @@ def parseConfigFile(configFile):
     at ~/.wakatime.cfg.
     """
 
-    configs = configparser.SafeConfigParser()
+    kwargs = {} if is_py2 else {'strict': False}
+    configs = ConfigParser(**kwargs)
     try:
         with open(configFile, 'r', encoding='utf-8') as fh:
             try:
-                configs.readfp(fh)
+                if is_py2:
+                    configs.readfp(fh)
+                else:
+                    configs.read_file(fh)
                 return configs
-            except configparser.Error:
+            except ConfigParserError:
                 log(ERROR, traceback.format_exc())
                 return None
     except IOError:
