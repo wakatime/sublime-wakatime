@@ -509,7 +509,7 @@ class SendHeartbeatsThread(threading.Thread):
                 heartbeat['alternate_project'] = project_name
 
         if cursorpos is not None:
-            heartbeat['cursorpos'] = '{0}'.format(cursorpos)
+            heartbeat['cursorpos'] = cursorpos
 
         return heartbeat
 
@@ -529,7 +529,7 @@ class SendHeartbeatsThread(threading.Thread):
         if heartbeat.get('alternate_project'):
             cmd.extend(['--alternate-project', heartbeat['alternate_project']])
         if heartbeat.get('cursorpos') is not None:
-            cmd.extend(['--cursorpos', heartbeat['cursorpos']])
+            cmd.extend(['--cursorpos', '{0}'.format(heartbeat['cursorpos'])])
         for pattern in self.ignore:
             cmd.extend(['--exclude', pattern])
         for pattern in self.include:
