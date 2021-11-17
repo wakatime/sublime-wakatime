@@ -3,6 +3,12 @@ History
 -------
 
 
+11.0.2 (2021-11-17)
+++++++++++++++++++
+
+- Bugfix to encode extra heartbeats cursorpos as int not str when sending to wakatime-cli.
+
+
 11.0.1 (2021-11-16)
 ++++++++++++++++++
 
