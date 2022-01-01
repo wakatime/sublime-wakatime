@@ -3,6 +3,13 @@ History
 -------
 
 
+11.0.3 (2021-12-31)
+++++++++++++++++++
+
+- Bugfix to not delete old wakatime-cli until finished downloading new version.
+  `#107 <https://github.com/wakatime/sublime-wakatime/issues/107>`_
+
+
 11.0.2 (2021-11-17)
 ++++++++++++++++++
 
