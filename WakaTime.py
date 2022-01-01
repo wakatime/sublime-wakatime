@@ -626,17 +626,17 @@ class DownloadCLI(threading.Thread):
         if not os.path.exists(RESOURCES_FOLDER):
             os.makedirs(RESOURCES_FOLDER)
 
-        if isCliInstalled():
-            try:
-                os.remove(getCliLocation())
-            except:
-                log(DEBUG, traceback.format_exc())
-
         try:
             url = cliDownloadUrl()
             log(DEBUG, 'Downloading wakatime-cli from {url}'.format(url=url))
             zip_file = os.path.join(RESOURCES_FOLDER, 'wakatime-cli.zip')
             download(url, zip_file)
+
+            if isCliInstalled():
+                try:
+                    os.remove(getCliLocation())
+                except:
+                    log(DEBUG, traceback.format_exc())
 
             log(INFO, 'Extracting wakatime-cli...')
             with ZipFile(zip_file) as zf:
