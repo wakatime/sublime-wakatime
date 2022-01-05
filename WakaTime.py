@@ -725,10 +725,7 @@ def getLatestCliVersion():
     try:
         configs = parseConfigFile(INTERNAL_CONFIG_FILE)
         if configs:
-            if configs.has_option('internal', 'cli_version'):
-                last_version = configs.get('internal', 'cli_version')
-            if last_version and configs.has_option('internal', 'cli_version_last_modified'):
-                last_modified = configs.get('internal', 'cli_version_last_modified')
+            last_modified, last_version = lastModifiedAndVersion(configs)
     except:
         log(DEBUG, traceback.format_exc())
 
@@ -760,6 +757,17 @@ def getLatestCliVersion():
     except:
         log(DEBUG, traceback.format_exc())
         return None
+
+
+def lastModifiedAndVersion(configs):
+    last_modified, last_version = None, None
+    if configs.has_option('internal', 'cli_version'):
+        last_version = configs.get('internal', 'cli_version')
+    if last_version and configs.has_option('internal', 'cli_version_last_modified'):
+        last_modified = configs.get('internal', 'cli_version_last_modified')
+    if last_modified and last_version and extractVersion(last_version):
+        return last_modified, last_version
+    return None, None
 
 
 def extractVersion(text):
