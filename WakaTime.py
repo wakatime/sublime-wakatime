@@ -18,6 +18,7 @@ import json
 import os
 import platform
 import re
+import shutil
 import ssl
 import subprocess
 import sys
@@ -652,6 +653,8 @@ class DownloadCLI(threading.Thread):
         except:
             log(DEBUG, traceback.format_exc())
 
+        createSymlink()
+
         log(INFO, 'Finished extracting wakatime-cli.')
 
 
@@ -903,3 +906,24 @@ def download(url, filePath):
             ssl._create_default_https_context = ssl._create_unverified_context
             urlretrieve(url, filePath)
         raise
+
+
+def createSymlink():
+    if is_win:
+        link = os.path.join(RESOURCES_FOLDER, 'wakatime-cli.exe')
+        if os.path.exists(link):
+            try:
+                os.remove(link)
+            except:
+                log(traceback.format_exc())
+        try:
+            shutil.copy2(getCliLocation(), link)
+        except:
+            log(traceback.format_exc())
+    else:
+        link = os.path.join(RESOURCES_FOLDER, 'wakatime-cli')
+        if not os.path.exists(link):
+            try:
+                os.symlink(getCliLocation(), link)
+            except:
+                pass
