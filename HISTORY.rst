@@ -3,6 +3,14 @@ History
 -------
 
 
+11.0.4 (2022-01-06)
+++++++++++++++++++
+
+- Copy wakatime-cli when symlink fails on Windows.
+  `vim-wakatime#122 <https://github.com/wakatime/vim-wakatime/issues/122>`_
+- Fix lineno, cursorpos, and lines-in-file arguments.
+
+
 11.0.3 (2021-12-31)
 ++++++++++++++++++
 
