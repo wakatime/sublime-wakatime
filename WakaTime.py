@@ -417,10 +417,16 @@ def append_heartbeat(entity, timestamp, is_write, view, project, folders):
         'entity': entity,
         'timestamp': timestamp,
         'is_write': is_write,
-        'cursorpos': view.sel()[0].begin() if view.sel() else None,
         'project': project,
         'folders': folders,
+        'lines_in_file': view.rowcol(view.size())[0] + 1,
     }
+    selections = view.sel()
+    if selections:
+        rowcol = view.rowcol(selections[0].begin())
+        row, col = rowcol[0] + 1, rowcol[1] + 1
+        heartbeat['lineno'] = row
+        heartbeat['cursorpos'] = col
     HEARTBEATS.put_nowait(heartbeat)
 
     # make this heartbeat the LAST_HEARTBEAT
@@ -493,7 +499,8 @@ class SendHeartbeatsThread(threading.Thread):
         self.send_heartbeats()
 
     def build_heartbeat(self, entity=None, timestamp=None, is_write=None,
-                        cursorpos=None, project=None, folders=None):
+                        lineno=None, cursorpos=None, lines_in_file=None,
+                        project=None, folders=None):
         """Returns a dict for passing to wakatime-cli as arguments."""
 
         heartbeat = {
@@ -509,8 +516,12 @@ class SendHeartbeatsThread(threading.Thread):
             if project_name:
                 heartbeat['alternate_project'] = project_name
 
+        if lineno is not None:
+            heartbeat['lineno'] = lineno
         if cursorpos is not None:
             heartbeat['cursorpos'] = cursorpos
+        if lines_in_file is not None:
+            heartbeat['lines-in-file'] = lines_in_file
 
         return heartbeat
 
@@ -529,8 +540,12 @@ class SendHeartbeatsThread(threading.Thread):
             cmd.append('--write')
         if heartbeat.get('alternate_project'):
             cmd.extend(['--alternate-project', heartbeat['alternate_project']])
+        if heartbeat.get('lineno') is not None:
+            cmd.extend(['--lineno', '{0}'.format(heartbeat['lineno'])])
         if heartbeat.get('cursorpos') is not None:
             cmd.extend(['--cursorpos', '{0}'.format(heartbeat['cursorpos'])])
+        if heartbeat.get('lines_in_file') is not None:
+            cmd.extend(['--lines-in-file', '{0}'.format(heartbeat['lines_in_file'])])
         for pattern in self.ignore:
             cmd.extend(['--exclude', pattern])
         for pattern in self.include:
