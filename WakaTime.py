@@ -639,6 +639,9 @@ class DownloadCLI(threading.Thread):
     def run(self):
         log(INFO, 'Downloading wakatime-cli...')
 
+        if os.path.isdir(os.path.join(RESOURCES_FOLDER, 'wakatime-cli')):
+            shutil.rmtree(os.path.join(RESOURCES_FOLDER, 'wakatime-cli'))
+
         if not os.path.exists(RESOURCES_FOLDER):
             os.makedirs(RESOURCES_FOLDER)
 
