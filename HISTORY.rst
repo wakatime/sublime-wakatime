@@ -3,6 +3,14 @@ History
 -------
 
 
+11.0.5 (2022-04-29)
+++++++++++++++++++
+
+- Bugfix to not overwrite global urlopener in embedded Python.
+  `#110 <https://github.com/wakatime/sublime-wakatime/issues/110>`_
+- Chmod wakatime-cli to be executable after updating on non-Windows platforms.
+
+
 11.0.4 (2022-01-06)
 ++++++++++++++++++
 
