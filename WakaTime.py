@@ -963,7 +963,7 @@ def createSymlink():
             if not is_win:
                 os.chmod(link, 509)  # 755
         except:
-            log(traceback.format_exc())
+            log(WARNING, traceback.format_exc())
 
 
 class SSLCertVerificationDisabled(object):
