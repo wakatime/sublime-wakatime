@@ -3,6 +3,13 @@ History
 -------
 
 
+11.0.6 (2022-06-08)
+++++++++++++++++++
+
+- Fix call to log helper.
+  `#113 <https://github.com/wakatime/sublime-wakatime/issues/113>`_
+
+
 11.0.5 (2022-04-29)
 ++++++++++++++++++
 
