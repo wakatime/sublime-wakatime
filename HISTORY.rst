@@ -3,6 +3,13 @@ History
 -------
 
 
+11.0.7 (2022-06-25)
+++++++++++++++++++
+
+- Check wakatime-cli versions in background thread.
+  `#115 <https://github.com/wakatime/sublime-wakatime/issues/115>`_
+
+
 11.0.6 (2022-06-08)
 ++++++++++++++++++
 
