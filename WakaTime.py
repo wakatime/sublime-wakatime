@@ -594,9 +594,7 @@ def plugin_loaded():
     log(INFO, 'Initializing WakaTime plugin v%s' % __version__)
     update_status_bar('Initializing...')
 
-    if not isCliLatest():
-        thread = DownloadCLI()
-        thread.start()
+    UpdateCLI().start()
 
     after_loaded()
 
@@ -632,11 +630,14 @@ class WakatimeDashboardCommand(sublime_plugin.ApplicationCommand):
         webbrowser.open_new_tab('https://wakatime.com/dashboard')
 
 
-class DownloadCLI(threading.Thread):
+class UpdateCLI(threading.Thread):
     """Non-blocking thread for downloading latest wakatime-cli from GitHub.
     """
 
     def run(self):
+        if isCliLatest():
+            return
+
         log(INFO, 'Downloading wakatime-cli...')
 
         if os.path.isdir(os.path.join(RESOURCES_FOLDER, 'wakatime-cli')):
