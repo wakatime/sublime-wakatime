@@ -3,6 +3,13 @@ History
 -------
 
 
+11.0.8 (2022-08-23)
+++++++++++++++++++
+
+- Bugfix to prevent using empty selection object.
+  `#116 <https://github.com/wakatime/sublime-wakatime/issues/116>`_
+
+
 11.0.7 (2022-06-25)
 ++++++++++++++++++
 
