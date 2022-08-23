@@ -422,7 +422,7 @@ def append_heartbeat(entity, timestamp, is_write, view, project, folders):
         'lines_in_file': view.rowcol(view.size())[0] + 1,
     }
     selections = view.sel()
-    if selections:
+    if selections and len(selections) > 0:
         rowcol = view.rowcol(selections[0].begin())
         row, col = rowcol[0] + 1, rowcol[1] + 1
         heartbeat['lineno'] = row
