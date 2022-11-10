@@ -571,12 +571,12 @@ class SendHeartbeatsThread(threading.Thread):
             process = Popen(cmd, stdin=stdin, stdout=PIPE, stderr=STDOUT)
             output, _err = process.communicate(input=inp)
             retcode = process.poll()
-            if (not retcode or retcode == 102) and not output:
+            if (not retcode or retcode == 102 or retcode == 112) and not output:
                 self.sent()
             else:
                 update_status_bar('Error')
             if retcode:
-                log(DEBUG if retcode == 102 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
+                log(DEBUG if retcode == 102 or retcode == 112 else ERROR, 'wakatime-core exited with status: {0}'.format(retcode))
             if output:
                 log(ERROR, u('wakatime-core output: {0}').format(output))
         except:
