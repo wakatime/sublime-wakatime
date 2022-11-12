@@ -3,10 +3,11 @@ History
 -------
 
 
-11.1.0 (2022-11-11)
+11.1.0 (2022-11-12)
 ++++++++++++++++++
 
-- Support for api key vault cmd config
+- Support for api key vault cmd config.
+  `#117 <https://github.com/wakatime/sublime-wakatime/pull/117>`_
 
 
 11.0.8 (2022-08-23)
