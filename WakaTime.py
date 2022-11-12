@@ -194,10 +194,31 @@ class ApiKey(object):
                     if key:
                         self._key = key
                         return self._key
+        
+            apiKeyFromVault = self.__readFromVaultCmd()
+            if apiKeyFromVault:
+                self._key = apiKeyFromVault
+                return self._key
         except:
             pass
 
         return self._key
+
+    def __readFromVaultCmd(self):
+        apiKeyCmd = SETTINGS.get('api_key_vault_cmd')
+        if not apiKeyCmd:
+            return None
+
+        try:
+            p = Popen(apiKeyCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            stdout, stderr = p.communicate()
+            if p.returncode == 0:
+                return stdout.strip()
+            log(WARNING, u(stderr))
+        except:
+            log(ERROR, traceback.format_exc())
+
+        return None
 
     def write(self, key):
         global SETTINGS
