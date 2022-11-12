@@ -186,6 +186,7 @@ class ApiKey(object):
             self._key = key
             return self._key
 
+        configs = None
         try:
             configs = parseConfigFile(CONFIG_FILE)
             if configs:
@@ -194,27 +195,36 @@ class ApiKey(object):
                     if key:
                         self._key = key
                         return self._key
-        
-            apiKeyFromVault = self.__readFromVaultCmd()
-            if apiKeyFromVault:
-                self._key = apiKeyFromVault
-                return self._key
         except:
             pass
 
+        key = self.api_key_from_vault_cmd(configs)
+        if key:
+            self._key = key
+            return self._key
+
         return self._key
 
-    def __readFromVaultCmd(self):
-        apiKeyCmd = SETTINGS.get('api_key_vault_cmd')
-        if not apiKeyCmd:
+    def api_key_from_vault_cmd(self, configs):
+        vault_cmd = SETTINGS.get('api_key_vault_cmd')
+        if not vault_cmd and configs:
+            try:
+                if configs.has_option('settings', 'api_key_vault_cmd'):
+                    vault_cmd = configs.get('settings', 'api_key_vault_cmd')
+            except:
+                pass
+
+        if not vault_cmd or not vault_cmd.strip():
             return None
 
         try:
-            p = Popen(apiKeyCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-            stdout, stderr = p.communicate()
-            if p.returncode == 0:
-                return stdout.strip()
-            log(WARNING, u(stderr))
+            process = Popen(vault_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            stdout, stderr = process.communicate()
+            retcode = process.poll()
+            if retcode:
+                log(ERROR, 'Vault command error ({retcode}): {stderr}'.format(retcode=retcode, stderr=u(stderr)))
+                return None
+            return stdout.strip() or None
         except:
             log(ERROR, traceback.format_exc())
 
