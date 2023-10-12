@@ -41,7 +41,7 @@ First, turn on debug mode in your `WakaTime.sublime-settings` file.
 Add the line: `"debug": true`
 
 Then, open your Sublime Console with `View → Show Console` ( CTRL + \` ) to see the plugin executing the wakatime cli process when sending a heartbeat.
-Also, tail your `$HOME/.wakatime.log` file to debug wakatime cli problems.
+Also, tail your `$HOME/.wakatime/wakatime.log` file to debug wakatime cli problems.
 
 The [How to Debug Plugins][how to debug] guide shows how to check when coding activity was last received from your editor using the [User Agents API][user agents api].
 For more general troubleshooting info, see the [wakatime-cli Troubleshooting Section][wakatime-cli-help].
