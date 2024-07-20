@@ -552,7 +552,7 @@ class SendHeartbeatsThread(threading.Thread):
         if cursorpos is not None:
             heartbeat['cursorpos'] = cursorpos
         if lines_in_file is not None:
-            heartbeat['lines_in_file'] = lines_in_file
+            heartbeat['lines'] = lines_in_file
 
         return heartbeat
 
@@ -575,8 +575,8 @@ class SendHeartbeatsThread(threading.Thread):
             cmd.extend(['--lineno', '{0}'.format(heartbeat['lineno'])])
         if heartbeat.get('cursorpos') is not None:
             cmd.extend(['--cursorpos', '{0}'.format(heartbeat['cursorpos'])])
-        if heartbeat.get('lines_in_file') is not None:
-            cmd.extend(['--lines-in-file', '{0}'.format(heartbeat['lines_in_file'])])
+        if heartbeat.get('lines') is not None:
+            cmd.extend(['--lines-in-file', '{0}'.format(heartbeat['lines'])])
         for pattern in self.ignore:
             cmd.extend(['--exclude', pattern])
         for pattern in self.include:
