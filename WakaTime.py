@@ -552,7 +552,7 @@ class SendHeartbeatsThread(threading.Thread):
         if cursorpos is not None:
             heartbeat['cursorpos'] = cursorpos
         if lines_in_file is not None:
-            heartbeat['lines-in-file'] = lines_in_file
+            heartbeat['lines_in_file'] = lines_in_file
 
         return heartbeat
 
